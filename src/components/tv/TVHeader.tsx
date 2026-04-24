@@ -15,7 +15,6 @@ export default function TVHeader({
 }: TVHeaderProps) {
   const { hours, minutes, seconds, gregorian, hijriInfo } = useClock()
 
-  // Highlight class for Hijri badge
   const highlightClass = `tv-hijri-${hijriInfo.highlight}`
 
   return (
@@ -53,48 +52,40 @@ export default function TVHeader({
         </div>
       </div>
 
-      {/* Center: Hijri Date Display */}
-      <div className="tv-hijri-section">
-        {/* Hijri date — larger and prominent */}
-        <div className={`tv-hijri-date ${highlightClass}`}>
-          <span className="tv-hijri-text">{hijriInfo.text}</span>
-        </div>
-
-        {/* Month label (sacred month / ramadan) */}
-        {hijriInfo.monthLabel && (
-          <div className={`tv-hijri-label ${highlightClass}`}>
-            {hijriInfo.monthLabel}
-          </div>
-        )}
-
-        {/* Special date badge */}
-        {hijriInfo.specialDate && (
-          <div className="tv-hijri-special">
-            <span>{hijriInfo.specialDate.emoji}</span>
-            <span>{hijriInfo.specialDate.label}</span>
-          </div>
-        )}
-
-        {/* Friday label */}
-        {hijriInfo.isFriday && !hijriInfo.specialDate && (
-          <div className="tv-hijri-friday">
-            🕌 Jum&apos;at Mubarak
-          </div>
-        )}
-      </div>
-
-      {/* Right: Gregorian Date + Clock */}
+      {/* Right: Dates + Clock */}
       <div className="flex items-center gap-md">
-        {/* Gregorian Date */}
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 600 }}>{gregorian}</div>
+        {/* Date block */}
+        <div className="tv-header-dates">
+          {/* Gregorian */}
+          <div className="tv-header-gregorian">{gregorian}</div>
+
+          {/* Hijri */}
+          <div className={`tv-hijri-date ${highlightClass}`}>
+            <span className="tv-hijri-text">{hijriInfo.text}</span>
+          </div>
+
+          {/* Labels row: month label OR special date OR friday */}
+          {hijriInfo.specialDate ? (
+            <div className="tv-hijri-special">
+              <span>{hijriInfo.specialDate.emoji}</span>
+              <span>{hijriInfo.specialDate.label}</span>
+            </div>
+          ) : hijriInfo.monthLabel ? (
+            <div className={`tv-hijri-label ${highlightClass}`}>
+              {hijriInfo.monthLabel}
+            </div>
+          ) : hijriInfo.isFriday ? (
+            <div className="tv-hijri-friday-badge">
+              🕌 Jum&apos;at Mubarak
+            </div>
+          ) : null}
         </div>
 
         {/* Divider */}
         <div style={{
           width: 1,
-          height: 32,
-          background: 'rgba(255,255,255,0.2)',
+          height: 40,
+          background: 'rgba(255,255,255,0.15)',
         }} />
 
         {/* Clock */}

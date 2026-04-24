@@ -568,138 +568,133 @@ h6 {
 }
 
 /* ── Hijri Date Section ────────────────────────────────────── */
-.tv-hijri-section {
+.tv-header-dates {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
   gap: 0.125rem;
-  flex: 1;
-  text-align: center;
+  text-align: right;
+}
+
+.tv-header-gregorian {
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.85;
 }
 
 .tv-hijri-date {
-  padding: 0.25rem 1rem;
+  padding: 0.125rem 0.625rem;
   border-radius: var(--radius-full);
   transition: all var(--transition-normal);
+  line-height: 1.2;
 }
 
 .tv-hijri-text {
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 
-/* Normal — subtle white */
+/* Normal — subtle */
 .tv-hijri-normal {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
 }
 
-/* Sacred months (Bulan Haram) — gold glow */
+/* Sacred months (Bulan Haram) — gold */
 .tv-hijri-sacred {
-  background: linear-gradient(135deg, rgba(212, 168, 67, 0.2), rgba(212, 168, 67, 0.1));
-  border: 1px solid rgba(212, 168, 67, 0.3);
+  background: linear-gradient(135deg, rgba(212, 168, 67, 0.2), rgba(212, 168, 67, 0.08));
+  border: 1px solid rgba(212, 168, 67, 0.25);
 }
 
 .tv-hijri-sacred .tv-hijri-text {
   color: var(--gold-300);
 }
 
-/* Ramadan — special crescent theme */
+/* Ramadan — crescent glow */
 @keyframes ramadanGlow {
   0%, 100% {
-    box-shadow: 0 0 12px rgba(212, 168, 67, 0.2),
-                0 0 24px rgba(212, 168, 67, 0.1);
+    box-shadow: 0 0 8px rgba(212, 168, 67, 0.15),
+                0 0 16px rgba(212, 168, 67, 0.08);
   }
   50% {
-    box-shadow: 0 0 18px rgba(212, 168, 67, 0.35),
-                0 0 36px rgba(212, 168, 67, 0.15);
+    box-shadow: 0 0 12px rgba(212, 168, 67, 0.3),
+                0 0 24px rgba(212, 168, 67, 0.12);
   }
 }
 
 .tv-hijri-ramadan {
-  background: linear-gradient(135deg, rgba(30, 58, 95, 0.6), rgba(212, 168, 67, 0.15));
-  border: 1px solid rgba(212, 168, 67, 0.4);
+  background: linear-gradient(135deg, rgba(30, 58, 95, 0.5), rgba(212, 168, 67, 0.12));
+  border: 1px solid rgba(212, 168, 67, 0.35);
   animation: ramadanGlow 3s ease-in-out infinite;
 }
 
 .tv-hijri-ramadan .tv-hijri-text {
   color: var(--gold-300);
-  text-shadow: 0 0 8px rgba(212, 168, 67, 0.3);
+  text-shadow: 0 0 6px rgba(212, 168, 67, 0.25);
 }
 
-/* Friday — teal accent */
+/* Friday — teal tint */
 .tv-hijri-friday {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(94, 234, 212, 0.08);
+  border: 1px solid rgba(94, 234, 212, 0.15);
 }
 
-/* Eid / Special date — celebration pulse */
+.tv-hijri-friday .tv-hijri-text {
+  color: #99F6E4;
+}
+
+/* Eid / Special — celebration */
 @keyframes eidPulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.02); }
 }
 
 .tv-hijri-eid {
-  background: linear-gradient(135deg, rgba(212, 168, 67, 0.3), rgba(255, 215, 0, 0.15));
-  border: 1px solid rgba(255, 215, 0, 0.4);
+  background: linear-gradient(135deg, rgba(212, 168, 67, 0.25), rgba(255, 215, 0, 0.1));
+  border: 1px solid rgba(255, 215, 0, 0.35);
   animation: eidPulse 2s ease-in-out infinite;
 }
 
 .tv-hijri-eid .tv-hijri-text {
   color: #FFD700;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.25);
 }
 
-/* Month label (sacred/ramadan) */
+/* Month label */
 .tv-hijri-label {
-  font-size: 0.5625rem;
+  font-size: 0.5rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 0.0625rem 0.5rem;
-  border-radius: var(--radius-full);
-}
-
-.tv-hijri-label.tv-hijri-sacred {
+  letter-spacing: 0.08em;
   color: var(--gold-400);
-  background: none;
-  border: none;
-  animation: none;
-}
-
-.tv-hijri-label.tv-hijri-ramadan {
-  color: var(--gold-300);
-  background: none;
-  border: none;
-  animation: none;
+  opacity: 0.8;
+  background: none !important;
+  border: none !important;
+  animation: none !important;
+  padding: 0;
 }
 
 /* Special date badge */
 .tv-hijri-special {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 0.625rem;
+  gap: 0.1875rem;
+  font-size: 0.5625rem;
   font-weight: 700;
   color: #FFD700;
   background: rgba(255, 215, 0, 0.1);
-  border: 1px solid rgba(255, 215, 0, 0.25);
-  padding: 0.125rem 0.625rem;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  padding: 0.0625rem 0.5rem;
   border-radius: var(--radius-full);
   animation: eidPulse 2s ease-in-out infinite;
 }
 
 /* Friday Mubarak badge */
-div.tv-hijri-friday {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.5625rem;
+.tv-hijri-friday-badge {
+  font-size: 0.5rem;
   font-weight: 700;
   color: #5EEAD4;
-  background: rgba(94, 234, 212, 0.1);
-  border: 1px solid rgba(94, 234, 212, 0.2);
-  padding: 0.0625rem 0.5rem;
-  border-radius: var(--radius-full);
+  letter-spacing: 0.05em;
 }
 
 .tv-body {
