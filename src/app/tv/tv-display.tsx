@@ -4,7 +4,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useSlideRotation } from '@/hooks/useSlideRotation'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
-import type { Event, Donation, Finance, Announcement, Hadith } from '@/lib/types'
+import { usePrayerTimes } from '@/hooks/usePrayerTimes'
+import { useTVDisplayMode } from '@/hooks/useTVDisplayMode'
+import { resumeAudioContext } from '@/hooks/useBeepSound'
+import type { Event, Donation, Finance, Announcement, Hadith, PrayerName } from '@/lib/types'
 
 import TVHeader from '@/components/tv/TVHeader'
 import PrayerTimesPanel from '@/components/tv/PrayerTimesPanel'
@@ -13,6 +16,9 @@ import HadithSlide from '@/components/tv/HadithSlide'
 import DonationPanel from '@/components/tv/DonationPanel'
 import FinancialSummary from '@/components/tv/FinancialSummary'
 import RunningText from '@/components/tv/RunningText'
+import AdhanOverlay from '@/components/tv/AdhanOverlay'
+import PrayerBlankScreen from '@/components/tv/PrayerBlankScreen'
+import FullscreenSlide from '@/components/tv/FullscreenSlide'
 
 interface TVDisplayProps {
   initialEvents: Event[]
@@ -24,6 +30,9 @@ interface TVDisplayProps {
   qrisUrl?: string | null
   mosqueName?: string
   tagline?: string
+  fullscreenInterval?: number
+  fullscreenDuration?: number
+  prayerDurations?: Record<PrayerName, number>
 }
 
 export default function TVDisplay({
@@ -36,12 +45,22 @@ export default function TVDisplay({
   qrisUrl,
   mosqueName,
   tagline,
+  fullscreenInterval = 5,
+  fullscreenDuration = 30,
+  prayerDurations = {
+    subuh: 15,
+    dzuhur: 15,
+    ashar: 15,
+    maghrib: 10,
+    isya: 15,
+  },
 }: TVDisplayProps) {
   const [events, setEvents] = useState(initialEvents)
   const [donations, setDonations] = useState(initialDonations)
   const [finance, setFinance] = useState(initialFinance)
   const [announcements, setAnnouncements] = useState(initialAnnouncements)
   const [hadiths, setHadiths] = useState(initialHadiths)
+  const [audioEnabled, setAudioEnabled] = useState(false)
 
   // Build slides array (events + hadiths interleaved)
   const slides: Array<{ type: 'event'; data: Event } | { type: 'hadith'; data: Hadith }> = []
@@ -49,6 +68,44 @@ export default function TVDisplay({
   hadiths.forEach((h) => slides.push({ type: 'hadith', data: h }))
 
   const { activeIndex } = useSlideRotation(slides.length, 8000)
+
+  // Prayer times + triggers
+  const {
+    adhanTriggered,
+    iqamahTriggered,
+    iqamahCountdown,
+    clearTriggers,
+  } = usePrayerTimes()
+
+  // TV display mode state machine
+  const { mode, activePrayer, blankRemaining } = useTVDisplayMode(
+    adhanTriggered,
+    iqamahTriggered,
+    clearTriggers,
+    {
+      fullscreenInterval,
+      fullscreenDuration,
+      prayerDurations,
+    }
+  )
+
+  // Enable audio on first user interaction (browser policy)
+  useEffect(() => {
+    const enableAudio = () => {
+      if (!audioEnabled) {
+        resumeAudioContext()
+        setAudioEnabled(true)
+      }
+    }
+    window.addEventListener('click', enableAudio, { once: true })
+    window.addEventListener('touchstart', enableAudio, { once: true })
+    window.addEventListener('keydown', enableAudio, { once: true })
+    return () => {
+      window.removeEventListener('click', enableAudio)
+      window.removeEventListener('touchstart', enableAudio)
+      window.removeEventListener('keydown', enableAudio)
+    }
+  }, [audioEnabled])
 
   // Refetch data function
   const refetch = useCallback(async (table: string) => {
@@ -119,6 +176,29 @@ export default function TVDisplay({
     return () => clearInterval(interval)
   }, [refetch])
 
+  // ── Render based on mode ─────────────────────────────────
+  // Prayer blank screen
+  if (mode === 'prayer_blank' && activePrayer) {
+    return <PrayerBlankScreen prayer={activePrayer} remaining={blankRemaining} />
+  }
+
+  // Adhan / Iqamah countdown overlay
+  if ((mode === 'adhan' || mode === 'iqamah_countdown') && activePrayer) {
+    return (
+      <AdhanOverlay
+        prayer={activePrayer}
+        iqamahCountdown={iqamahCountdown}
+        mode={mode}
+      />
+    )
+  }
+
+  // Fullscreen slide mode
+  if (mode === 'fullscreen') {
+    return <FullscreenSlide events={events} hadiths={hadiths} />
+  }
+
+  // Normal mode
   return (
     <div className="tv-layout">
       <TVHeader logoUrl={logoUrl} mosqueName={mosqueName} tagline={tagline} />
@@ -183,6 +263,13 @@ export default function TVDisplay({
       </div>
 
       <RunningText announcements={announcements} />
+
+      {/* Audio enable hint */}
+      {!audioEnabled && (
+        <div className="tv-audio-hint">
+          🔇 Klik layar untuk mengaktifkan suara
+        </div>
+      )}
     </div>
   )
 }

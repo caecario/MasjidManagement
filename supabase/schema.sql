@@ -15,6 +15,15 @@ CREATE TABLE mosque_config (
   latitude DECIMAL DEFAULT -6.2088,
   longitude DECIMAL DEFAULT 106.8456,
   calculation_method INT DEFAULT 20,
+  -- Fullscreen slide settings
+  fullscreen_interval INT DEFAULT 5,    -- every X minutes, go fullscreen
+  fullscreen_duration INT DEFAULT 30,   -- fullscreen duration in seconds
+  -- Prayer blank screen duration (minutes after iqamah)
+  prayer_duration_subuh INT DEFAULT 15,
+  prayer_duration_dzuhur INT DEFAULT 15,
+  prayer_duration_ashar INT DEFAULT 15,
+  prayer_duration_maghrib INT DEFAULT 10,
+  prayer_duration_isya INT DEFAULT 15,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

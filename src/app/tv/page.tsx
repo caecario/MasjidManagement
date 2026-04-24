@@ -115,24 +115,56 @@ export default async function TVPage() {
   let announcements = demoAnnouncements
   let hadiths = demoHadiths
 
-  // Read mosque config from local JSON
+  // Read mosque config — try Supabase first, then local JSON
   let logoUrl: string | null = null
   let qrisUrl: string | null = null
   let mosqueName = 'MASJID AS-SYAMS'
   let tagline = 'Menerangi Hati, Menghidupkan Sunnah'
+  let fullscreenInterval = 5
+  let fullscreenDuration = 30
+  let prayerDurations = {
+    subuh: 15,
+    dzuhur: 15,
+    ashar: 15,
+    maghrib: 10,
+    isya: 15,
+  } as Record<import('@/lib/types').PrayerName, number>
 
   try {
-    const fs = await import('fs/promises')
-    const path = await import('path')
-    const configPath = path.join(process.cwd(), 'public', 'mosque-config.json')
-    const configData = await fs.readFile(configPath, 'utf-8')
-    const config = JSON.parse(configData)
-    logoUrl = config.logo_url || null
-    qrisUrl = config.qris_url || null
-    mosqueName = config.mosque_name || mosqueName
-    tagline = config.tagline || tagline
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    const { data: configData } = await supabase.from('mosque_config').select('*').limit(1).single()
+    if (configData) {
+      logoUrl = configData.logo_url || null
+      qrisUrl = configData.qris_url || null
+      mosqueName = configData.name || mosqueName
+      tagline = configData.tagline || tagline
+      fullscreenInterval = configData.fullscreen_interval ?? fullscreenInterval
+      fullscreenDuration = configData.fullscreen_duration ?? fullscreenDuration
+      prayerDurations = {
+        subuh: configData.prayer_duration_subuh ?? 15,
+        dzuhur: configData.prayer_duration_dzuhur ?? 15,
+        ashar: configData.prayer_duration_ashar ?? 15,
+        maghrib: configData.prayer_duration_maghrib ?? 10,
+        isya: configData.prayer_duration_isya ?? 15,
+      }
+    }
   } catch {
-    // Config file doesn't exist yet
+    // Supabase not available, try local JSON
+    try {
+      const fs = await import('fs/promises')
+      const path = await import('path')
+      const configPath = path.join(process.cwd(), 'public', 'mosque-config.json')
+      const raw = await fs.readFile(configPath, 'utf-8')
+      const config = JSON.parse(raw)
+      logoUrl = config.logo_url || null
+      qrisUrl = config.qris_url || null
+      mosqueName = config.mosque_name || mosqueName
+      tagline = config.tagline || tagline
+      fullscreenInterval = config.fullscreen_interval ?? fullscreenInterval
+      fullscreenDuration = config.fullscreen_duration ?? fullscreenDuration
+      if (config.prayer_durations) prayerDurations = config.prayer_durations
+    } catch { /* no config */ }
   }
 
   // Try fetching from Supabase (gracefully fallback to demo data)
@@ -190,6 +222,9 @@ export default async function TVPage() {
       qrisUrl={qrisUrl}
       mosqueName={mosqueName}
       tagline={tagline}
+      fullscreenInterval={fullscreenInterval}
+      fullscreenDuration={fullscreenDuration}
+      prayerDurations={prayerDurations}
     />
   )
 }

@@ -1,37 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-// Try Supabase Storage first, fallback to local filesystem
+// Upload to Supabase Storage
 async function uploadToSupabase(buffer: Buffer, filename: string, contentType: string): Promise<string | null> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  // Prefer service role key for storage uploads (bypasses RLS)
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   if (!url || !key) return null
 
   const supabase = createClient(url, key)
 
-  // Ensure bucket exists
-  const { data: buckets } = await supabase.storage.listBuckets()
-  if (!buckets?.find(b => b.name === 'uploads')) {
-    await supabase.storage.createBucket('uploads', { public: true })
+  // Ensure bucket exists (only works with service role key)
+  try {
+    const { data: buckets } = await supabase.storage.listBuckets()
+    if (!buckets?.find(b => b.name === 'uploads')) {
+      await supabase.storage.createBucket('uploads', {
+        public: true,
+        allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'],
+        fileSizeLimit: 5 * 1024 * 1024,
+      })
+    }
+  } catch (err) {
+    console.error('Bucket check failed:', err)
   }
 
   const { error } = await supabase.storage
     .from('uploads')
     .upload(filename, buffer, { contentType, upsert: true })
 
-  if (error) return null
+  if (error) {
+    console.error('Supabase upload error:', error.message)
+    return null
+  }
 
   const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(filename)
   return urlData.publicUrl
-}
-
-async function uploadToLocal(buffer: Buffer, filename: string): Promise<string> {
-  const { writeFile, mkdir } = await import('fs/promises')
-  const path = await import('path')
-  const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
-  await mkdir(uploadsDir, { recursive: true })
-  await writeFile(path.join(uploadsDir, filename), buffer)
-  return `/uploads/${filename}`
 }
 
 export async function POST(request: NextRequest) {
@@ -49,10 +52,9 @@ export async function POST(request: NextRequest) {
     const ext = file.name.split('.').pop() || 'png'
     const filename = `${type || 'file'}-${Date.now()}.${ext}`
 
-    // Try Supabase Storage first, fallback to local
-    let url = await uploadToSupabase(buffer, filename, file.type)
+    const url = await uploadToSupabase(buffer, filename, file.type)
     if (!url) {
-      url = await uploadToLocal(buffer, filename)
+      return NextResponse.json({ error: 'Upload gagal. Pastikan Supabase Storage bucket "uploads" sudah dibuat dan SUPABASE_SERVICE_ROLE_KEY sudah di-set.' }, { status: 500 })
     }
 
     return NextResponse.json({ url, filename })

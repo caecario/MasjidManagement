@@ -7,11 +7,19 @@ export interface MosqueConfig {
   name: string
   tagline: string
   logo_url: string | null
+  qris_url: string | null
   city: string
   country: string
   latitude: number
   longitude: number
   calculation_method: number
+  fullscreen_interval: number
+  fullscreen_duration: number
+  prayer_duration_subuh: number
+  prayer_duration_dzuhur: number
+  prayer_duration_ashar: number
+  prayer_duration_maghrib: number
+  prayer_duration_isya: number
   created_at: string
 }
 
@@ -117,4 +125,16 @@ export const TEMPLATE_LABELS: Record<TemplateType, string> = {
   sholat_jumat: "Sholat Jum'at",
   kajian_spesial: 'Kajian Spesial',
   pengumuman: 'Pengumuman',
+}
+
+/* TV Display Mode */
+export type TVDisplayMode = 'normal' | 'fullscreen' | 'adhan' | 'iqamah_countdown' | 'prayer_blank'
+
+/* Prayer duration config keys */
+export const PRAYER_DURATION_KEYS: Record<PrayerName, keyof MosqueConfig> = {
+  subuh: 'prayer_duration_subuh',
+  dzuhur: 'prayer_duration_dzuhur',
+  ashar: 'prayer_duration_ashar',
+  maghrib: 'prayer_duration_maghrib',
+  isya: 'prayer_duration_isya',
 }

@@ -13,6 +13,21 @@ interface MosqueConfig {
   latitude: number
   longitude: number
   method: number
+  fullscreen_interval: number
+  fullscreen_duration: number
+  prayer_duration_subuh: number
+  prayer_duration_dzuhur: number
+  prayer_duration_ashar: number
+  prayer_duration_maghrib: number
+  prayer_duration_isya: number
+}
+
+const prayerLabels: Record<string, string> = {
+  subuh: '🌅 Subuh',
+  dzuhur: '☀️ Dzuhur',
+  ashar: '🌤️ Ashar',
+  maghrib: '🌅 Maghrib',
+  isya: '🌙 Isya',
 }
 
 export default function SettingsPage() {
@@ -26,6 +41,13 @@ export default function SettingsPage() {
     latitude: -6.2088,
     longitude: 106.8456,
     method: 20,
+    fullscreen_interval: 5,
+    fullscreen_duration: 30,
+    prayer_duration_subuh: 15,
+    prayer_duration_dzuhur: 15,
+    prayer_duration_ashar: 15,
+    prayer_duration_maghrib: 10,
+    prayer_duration_isya: 15,
   })
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -98,6 +120,13 @@ export default function SettingsPage() {
       showMsg('⚠️ Gagal menyimpan')
     }
     setSaving(false)
+  }
+
+  const updatePrayerDuration = (prayer: string, value: number) => {
+    setConfig(prev => ({
+      ...prev,
+      [`prayer_duration_${prayer}`]: value,
+    }))
   }
 
   return (
@@ -214,6 +243,103 @@ export default function SettingsPage() {
                 <option value={2}>ISNA</option>
                 <option value={4}>Umm al-Qura</option>
               </select>
+            </div>
+          </div>
+        </div>
+
+        {/* TV Display Settings */}
+        <div className="card">
+          <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>📺 Pengaturan Tampilan TV</h2>
+          <div className="flex flex-col gap-md">
+            <div style={{ background: 'var(--green-50)', border: '1px solid var(--green-200)', borderRadius: 'var(--radius-md)', padding: '0.75rem' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--green-700)' }}>
+                TV akan masuk mode <strong>fullscreen slideshow</strong> secara berkala. Saat fullscreen, tampilan TV hanya menampilkan slide kajian & hadist tanpa sidebar.
+              </p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-group">
+                <label className="form-label">Interval Fullscreen</label>
+                <div className="flex items-center gap-sm">
+                  <input
+                    className="form-input"
+                    type="number"
+                    min={1}
+                    max={60}
+                    value={config.fullscreen_interval}
+                    onChange={(e) => setConfig(prev => ({ ...prev, fullscreen_interval: parseInt(e.target.value) || 5 }))}
+                    style={{ width: 80, textAlign: 'center' }}
+                  />
+                  <span style={{ fontSize: '0.875rem', color: 'var(--gray-500)' }}>menit</span>
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'var(--gray-400)' }}>
+                  Setiap berapa menit masuk mode fullscreen
+                </p>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Durasi Fullscreen</label>
+                <div className="flex items-center gap-sm">
+                  <input
+                    className="form-input"
+                    type="number"
+                    min={10}
+                    max={300}
+                    value={config.fullscreen_duration}
+                    onChange={(e) => setConfig(prev => ({ ...prev, fullscreen_duration: parseInt(e.target.value) || 30 }))}
+                    style={{ width: 80, textAlign: 'center' }}
+                  />
+                  <span style={{ fontSize: '0.875rem', color: 'var(--gray-500)' }}>detik</span>
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'var(--gray-400)' }}>
+                  Berapa lama tampilan fullscreen ditampilkan
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Prayer Blank Duration */}
+        <div className="card">
+          <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>🕐 Durasi Waktu Sholat</h2>
+          <div className="flex flex-col gap-md">
+            <div style={{ background: 'var(--green-50)', border: '1px solid var(--green-200)', borderRadius: 'var(--radius-md)', padding: '0.75rem' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--green-700)' }}>
+                Saat <strong>adzan</strong> → suara beep + countdown iqamah. Saat <strong>iqamah</strong> → beep + layar hitam selama durasi di bawah.
+              </p>
+            </div>
+
+            <div className="table-wrapper">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Sholat</th>
+                    <th>Durasi Blank (menit)</th>
+                    <th>Keterangan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'].map((prayer) => (
+                    <tr key={prayer}>
+                      <td style={{ fontWeight: 600 }}>{prayerLabels[prayer]}</td>
+                      <td>
+                        <input
+                          className="form-input"
+                          type="number"
+                          min={5}
+                          max={60}
+                          value={(config as unknown as Record<string, number>)[`prayer_duration_${prayer}`]}
+                          onChange={(e) => updatePrayerDuration(prayer, parseInt(e.target.value) || 15)}
+                          style={{ width: 80, textAlign: 'center' }}
+                        />
+                      </td>
+                      <td style={{ fontSize: '0.8125rem', color: 'var(--gray-400)' }}>
+                        Layar blank setelah iqamah
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

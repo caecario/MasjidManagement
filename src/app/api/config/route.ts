@@ -11,6 +11,13 @@ const DEFAULT_CONFIG = {
   latitude: -6.2088,
   longitude: 106.8456,
   method: 20,
+  fullscreen_interval: 5,
+  fullscreen_duration: 30,
+  prayer_duration_subuh: 15,
+  prayer_duration_dzuhur: 15,
+  prayer_duration_ashar: 15,
+  prayer_duration_maghrib: 10,
+  prayer_duration_isya: 15,
 }
 
 // Try Supabase first, then local JSON
@@ -33,6 +40,13 @@ async function getConfigFromSupabase() {
     latitude: data.latitude,
     longitude: data.longitude,
     method: data.calculation_method,
+    fullscreen_interval: data.fullscreen_interval,
+    fullscreen_duration: data.fullscreen_duration,
+    prayer_duration_subuh: data.prayer_duration_subuh,
+    prayer_duration_dzuhur: data.prayer_duration_dzuhur,
+    prayer_duration_ashar: data.prayer_duration_ashar,
+    prayer_duration_maghrib: data.prayer_duration_maghrib,
+    prayer_duration_isya: data.prayer_duration_isya,
   }
 }
 
@@ -65,6 +79,13 @@ async function saveConfigToSupabase(config: Record<string, unknown>) {
   if (config.latitude !== undefined) dbData.latitude = config.latitude
   if (config.longitude !== undefined) dbData.longitude = config.longitude
   if (config.method !== undefined) dbData.calculation_method = config.method
+  if (config.fullscreen_interval !== undefined) dbData.fullscreen_interval = config.fullscreen_interval
+  if (config.fullscreen_duration !== undefined) dbData.fullscreen_duration = config.fullscreen_duration
+  if (config.prayer_duration_subuh !== undefined) dbData.prayer_duration_subuh = config.prayer_duration_subuh
+  if (config.prayer_duration_dzuhur !== undefined) dbData.prayer_duration_dzuhur = config.prayer_duration_dzuhur
+  if (config.prayer_duration_ashar !== undefined) dbData.prayer_duration_ashar = config.prayer_duration_ashar
+  if (config.prayer_duration_maghrib !== undefined) dbData.prayer_duration_maghrib = config.prayer_duration_maghrib
+  if (config.prayer_duration_isya !== undefined) dbData.prayer_duration_isya = config.prayer_duration_isya
 
   // Get existing config row
   const { data: existing } = await supabase.from('mosque_config').select('id').limit(1).single()

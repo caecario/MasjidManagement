@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import type { PrayerName } from '@/lib/types'
 
 interface PrayerSchedule {
@@ -17,6 +17,9 @@ interface UsePrayerTimesReturn {
   nextPrayer: PrayerName | null
   iqamahCountdown: number | null // seconds remaining
   iqamahPrayer: PrayerName | null
+  adhanTriggered: PrayerName | null   // fires once when adhan time is reached
+  iqamahTriggered: PrayerName | null  // fires once when iqamah time is reached
+  clearTriggers: () => void
   loading: boolean
 }
 
@@ -53,6 +56,17 @@ export function usePrayerTimes(
   const [nextPrayer, setNextPrayer] = useState<PrayerName | null>(null)
   const [iqamahCountdown, setIqamahCountdown] = useState<number | null>(null)
   const [iqamahPrayer, setIqamahPrayer] = useState<PrayerName | null>(null)
+  const [adhanTriggered, setAdhanTriggered] = useState<PrayerName | null>(null)
+  const [iqamahTriggered, setIqamahTriggered] = useState<PrayerName | null>(null)
+
+  // Track which prayers have already triggered today (avoid re-firing)
+  const firedAdhan = useRef<Set<string>>(new Set())
+  const firedIqamah = useRef<Set<string>>(new Set())
+
+  const clearTriggers = useCallback(() => {
+    setAdhanTriggered(null)
+    setIqamahTriggered(null)
+  }, [])
 
   // Fetch from AlAdhan API
   useEffect(() => {
@@ -85,7 +99,19 @@ export function usePrayerTimes(
     fetchPrayers()
   }, [latitude, longitude, method])
 
-  // Update current/next prayer + iqamah countdown
+  // Reset fired triggers at midnight
+  useEffect(() => {
+    const checkMidnight = setInterval(() => {
+      const now = new Date()
+      if (now.getHours() === 0 && now.getMinutes() === 0) {
+        firedAdhan.current.clear()
+        firedIqamah.current.clear()
+      }
+    }, 60000)
+    return () => clearInterval(checkMidnight)
+  }, [])
+
+  // Update current/next prayer + iqamah countdown + triggers
   const updatePrayerState = useCallback(() => {
     const now = new Date()
     const nowMinutes = now.getHours() * 60 + now.getMinutes()
@@ -110,6 +136,15 @@ export function usePrayerTimes(
     setCurrentPrayer(current)
     setNextPrayer(next)
 
+    // Adhan trigger — fires once when prayer minute is first reached
+    if (current) {
+      const prayerMinutes = parseTime(prayers[current])
+      if (nowMinutes === prayerMinutes && !firedAdhan.current.has(current)) {
+        firedAdhan.current.add(current)
+        setAdhanTriggered(current)
+      }
+    }
+
     // Check iqamah countdown (within iqamah window of current prayer)
     if (current) {
       const prayerSeconds = parseTime(prayers[current]) * 60
@@ -124,6 +159,13 @@ export function usePrayerTimes(
         setIqamahCountdown(null)
         setIqamahPrayer(null)
       }
+
+      // Iqamah trigger — fires once when iqamah time is reached
+      const iqamahSeconds = prayerSeconds + iqamahMinutes * 60
+      if (nowSeconds >= iqamahSeconds && nowSeconds < iqamahSeconds + 2 && !firedIqamah.current.has(current)) {
+        firedIqamah.current.add(current)
+        setIqamahTriggered(current)
+      }
     }
   }, [prayers])
 
@@ -133,5 +175,16 @@ export function usePrayerTimes(
     return () => clearInterval(interval)
   }, [updatePrayerState])
 
-  return { prayers, currentPrayer, nextPrayer, iqamahCountdown, iqamahPrayer, loading }
+  return {
+    prayers,
+    currentPrayer,
+    nextPrayer,
+    iqamahCountdown,
+    iqamahPrayer,
+    adhanTriggered,
+    iqamahTriggered,
+    clearTriggers,
+    loading,
+  }
 }
+
