@@ -35,11 +35,11 @@ try {
 const SACRED_MONTHS = new Set([1, 7, 11, 12]) // Muharram, Rajab, Dzulqa'dah, Dzulhijjah
 
 const HIJRI_MONTH_LABELS: Record<number, string> = {
-  1: 'Bulan Haram — Al-Muharram',
+  1: 'Bulan Haram — Muharram',
   7: 'Bulan Haram — Rajab',
   9: '🌙 Ramadhan Kareem',
-  11: 'Bulan Haram — Dzulqa\'dah',
-  12: 'Bulan Haram — Dzulhijjah',
+  11: 'Bulan Haram — Zulkaidah',
+  12: 'Bulan Haram — Zulhijah',
 }
 
 // Special dates: [month, day] => label

@@ -17,6 +17,15 @@ export default function TVHeader({
 
   const highlightClass = `tv-hijri-${hijriInfo.highlight}`
 
+  // Center label — special date > month label > friday
+  const centerLabel = hijriInfo.specialDate
+    ? { text: `${hijriInfo.specialDate.emoji} ${hijriInfo.specialDate.label}`, type: 'special' }
+    : hijriInfo.monthLabel
+    ? { text: hijriInfo.monthLabel, type: hijriInfo.highlight }
+    : hijriInfo.isFriday
+    ? { text: '🕌 Jum\'at Mubarak', type: 'friday' }
+    : null
+
   return (
     <header className="tv-header">
       {/* Left: Logo + Name */}
@@ -52,6 +61,13 @@ export default function TVHeader({
         </div>
       </div>
 
+      {/* Center: Special Label */}
+      {centerLabel && (
+        <div className={`tv-center-label tv-center-label-${centerLabel.type}`}>
+          {centerLabel.text}
+        </div>
+      )}
+
       {/* Right: Dates + Clock */}
       <div className="flex items-center gap-md">
         {/* Date block */}
@@ -63,22 +79,6 @@ export default function TVHeader({
           <div className={`tv-hijri-date ${highlightClass}`}>
             <span className="tv-hijri-text">{hijriInfo.text}</span>
           </div>
-
-          {/* Labels row: month label OR special date OR friday */}
-          {hijriInfo.specialDate ? (
-            <div className="tv-hijri-special">
-              <span>{hijriInfo.specialDate.emoji}</span>
-              <span>{hijriInfo.specialDate.label}</span>
-            </div>
-          ) : hijriInfo.monthLabel ? (
-            <div className={`tv-hijri-label ${highlightClass}`}>
-              {hijriInfo.monthLabel}
-            </div>
-          ) : hijriInfo.isFriday ? (
-            <div className="tv-hijri-friday-badge">
-              🕌 Jum&apos;at Mubarak
-            </div>
-          ) : null}
         </div>
 
         {/* Divider */}

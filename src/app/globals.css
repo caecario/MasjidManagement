@@ -565,9 +565,52 @@ h6 {
   padding: 0.5rem 1rem;
   background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 100%);
   color: var(--white);
+  position: relative;
 }
 
 /* ── Hijri Date Section ────────────────────────────────────── */
+
+/* Center label — special events/dates */
+.tv-center-label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.1875rem 1rem;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.tv-center-label-sacred {
+  color: var(--gold-400);
+  background: rgba(212, 168, 67, 0.1);
+  border: 1px solid rgba(212, 168, 67, 0.2);
+}
+
+.tv-center-label-ramadan {
+  color: var(--gold-300);
+  background: linear-gradient(135deg, rgba(30, 58, 95, 0.4), rgba(212, 168, 67, 0.1));
+  border: 1px solid rgba(212, 168, 67, 0.3);
+  animation: ramadanGlow 3s ease-in-out infinite;
+}
+
+.tv-center-label-friday {
+  color: #5EEAD4;
+  background: rgba(94, 234, 212, 0.08);
+  border: 1px solid rgba(94, 234, 212, 0.15);
+}
+
+.tv-center-label-special,
+.tv-center-label-eid {
+  color: #FFD700;
+  background: rgba(255, 215, 0, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  animation: eidPulse 2s ease-in-out infinite;
+}
+
 .tv-header-dates {
   display: flex;
   flex-direction: column;
