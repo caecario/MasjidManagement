@@ -81,12 +81,14 @@ export function usePrayerTimes(
 
         if (data.code === 200) {
           const t = data.data.timings
+          // Strip timezone suffix e.g. "04:45 (WIB)" → "04:45"
+          const clean = (s: string) => s.replace(/\s*\(.*\)$/, '').trim()
           setPrayers({
-            subuh: t.Fajr,
-            dzuhur: t.Dhuhr,
-            ashar: t.Asr,
-            maghrib: t.Maghrib,
-            isya: t.Isha,
+            subuh: clean(t.Fajr),
+            dzuhur: clean(t.Dhuhr),
+            ashar: clean(t.Asr),
+            maghrib: clean(t.Maghrib),
+            isya: clean(t.Isha),
           })
         }
       } catch (err) {

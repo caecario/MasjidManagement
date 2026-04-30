@@ -1,13 +1,17 @@
 'use client'
 
-import { usePrayerTimes } from '@/hooks/usePrayerTimes'
 import { PRAYER_ICONS, PRAYER_LABELS, type PrayerName } from '@/lib/types'
 import { pad } from '@/lib/utils'
 
 const PRAYER_ORDER: PrayerName[] = ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya']
 
-export default function PrayerTimesPanel() {
-  const { prayers, currentPrayer, nextPrayer } = usePrayerTimes()
+interface PrayerTimesPanelProps {
+  prayers: Record<PrayerName, string>
+  currentPrayer: PrayerName | null
+  nextPrayer: PrayerName | null
+}
+
+export default function PrayerTimesPanel({ prayers, currentPrayer, nextPrayer }: PrayerTimesPanelProps) {
 
   // Calculate countdown to next prayer
   const getCountdown = () => {

@@ -122,6 +122,9 @@ export default async function TVPage() {
   let tagline = 'Menerangi Hati, Menghidupkan Sunnah'
   let fullscreenInterval = 5
   let fullscreenDuration = 30
+  let latitude = -6.2088
+  let longitude = 106.8456
+  let method = 20
   let prayerDurations = {
     subuh: 15,
     dzuhur: 15,
@@ -141,6 +144,9 @@ export default async function TVPage() {
       tagline = configData.tagline || tagline
       fullscreenInterval = configData.fullscreen_interval ?? fullscreenInterval
       fullscreenDuration = configData.fullscreen_duration ?? fullscreenDuration
+      latitude = configData.latitude ?? latitude
+      longitude = configData.longitude ?? longitude
+      method = configData.calculation_method ?? method
       prayerDurations = {
         subuh: configData.prayer_duration_subuh ?? 15,
         dzuhur: configData.prayer_duration_dzuhur ?? 15,
@@ -225,6 +231,9 @@ export default async function TVPage() {
       fullscreenInterval={fullscreenInterval}
       fullscreenDuration={fullscreenDuration}
       prayerDurations={prayerDurations}
+      latitude={latitude}
+      longitude={longitude}
+      method={method}
     />
   )
 }

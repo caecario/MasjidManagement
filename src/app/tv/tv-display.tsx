@@ -33,6 +33,9 @@ interface TVDisplayProps {
   fullscreenInterval?: number
   fullscreenDuration?: number
   prayerDurations?: Record<PrayerName, number>
+  latitude?: number
+  longitude?: number
+  method?: number
 }
 
 export default function TVDisplay({
@@ -54,6 +57,9 @@ export default function TVDisplay({
     maghrib: 10,
     isya: 15,
   },
+  latitude = -6.2088,
+  longitude = 106.8456,
+  method = 20,
 }: TVDisplayProps) {
   const [events, setEvents] = useState(initialEvents)
   const [donations, setDonations] = useState(initialDonations)
@@ -71,11 +77,14 @@ export default function TVDisplay({
 
   // Prayer times + triggers
   const {
+    prayers,
+    currentPrayer,
+    nextPrayer,
     adhanTriggered,
     iqamahTriggered,
     iqamahCountdown,
     clearTriggers,
-  } = usePrayerTimes()
+  } = usePrayerTimes(latitude, longitude, method)
 
   // TV display mode state machine
   const { mode, activePrayer, blankRemaining } = useTVDisplayMode(
@@ -205,7 +214,7 @@ export default function TVDisplay({
 
       <div className="tv-body">
         {/* Left: Prayer Times */}
-        <PrayerTimesPanel />
+        <PrayerTimesPanel prayers={prayers} currentPrayer={currentPrayer} nextPrayer={nextPrayer} />
 
         {/* Center: Slides + Financial */}
         <div className="tv-center">
