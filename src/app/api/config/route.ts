@@ -8,9 +8,8 @@ const DEFAULT_CONFIG = {
   qris_url: null,
   city: 'Jakarta',
   country: 'ID',
-  latitude: -6.2088,
-  longitude: 106.8456,
-  method: 20,
+  provinsi: 'DKI Jakarta',
+  kabkota: 'Kota Jakarta',
   fullscreen_interval: 5,
   fullscreen_duration: 30,
   prayer_duration_subuh: 15,
@@ -37,9 +36,8 @@ async function getConfigFromSupabase() {
     qris_url: data.qris_url,
     city: data.city,
     country: data.country,
-    latitude: data.latitude,
-    longitude: data.longitude,
-    method: data.calculation_method,
+    provinsi: data.provinsi,
+    kabkota: data.kabkota,
     fullscreen_interval: data.fullscreen_interval,
     fullscreen_duration: data.fullscreen_duration,
     prayer_duration_subuh: data.prayer_duration_subuh,
@@ -76,9 +74,8 @@ async function saveConfigToSupabase(config: Record<string, unknown>) {
   if (config.qris_url !== undefined) dbData.qris_url = config.qris_url
   if (config.city !== undefined) dbData.city = config.city
   if (config.country !== undefined) dbData.country = config.country
-  if (config.latitude !== undefined) dbData.latitude = config.latitude
-  if (config.longitude !== undefined) dbData.longitude = config.longitude
-  if (config.method !== undefined) dbData.calculation_method = config.method
+  if (config.provinsi !== undefined) dbData.provinsi = config.provinsi
+  if (config.kabkota !== undefined) dbData.kabkota = config.kabkota
   if (config.fullscreen_interval !== undefined) dbData.fullscreen_interval = config.fullscreen_interval
   if (config.fullscreen_duration !== undefined) dbData.fullscreen_duration = config.fullscreen_duration
   if (config.prayer_duration_subuh !== undefined) dbData.prayer_duration_subuh = config.prayer_duration_subuh

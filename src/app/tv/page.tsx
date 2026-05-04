@@ -4,6 +4,7 @@ import type { Event, Donation, Finance, Announcement, Hadith } from '@/lib/types
 // Disable all caching — TV must always show latest data
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+export const fetchCache = 'force-no-store'
 
 // Demo data for development (when Supabase is not connected)
 const demoEvents: Event[] = [
@@ -109,11 +110,13 @@ const demoHadiths: Hadith[] = [
 ]
 
 export default async function TVPage() {
-  let events = demoEvents
-  let donations = demoDonations
-  let finance: Finance | null = demoFinance
-  let announcements = demoAnnouncements
-  let hadiths = demoHadiths
+  // Start with empty — demo data is the LAST resort
+  let events: Event[] = []
+  let donations: Donation[] = []
+  let finance: Finance | null = null
+  let announcements: Announcement[] = []
+  let hadiths: Hadith[] = []
+  let supabaseConnected = false
 
   // Read mosque config — try Supabase first, then local JSON
   let logoUrl: string | null = null
@@ -122,9 +125,8 @@ export default async function TVPage() {
   let tagline = 'Menerangi Hati, Menghidupkan Sunnah'
   let fullscreenInterval = 5
   let fullscreenDuration = 30
-  let latitude = -6.2088
-  let longitude = 106.8456
-  let method = 20
+  let provinsi = 'DKI Jakarta'
+  let kabkota = 'Kota Jakarta'
   let prayerDurations = {
     subuh: 15,
     dzuhur: 15,
@@ -144,9 +146,8 @@ export default async function TVPage() {
       tagline = configData.tagline || tagline
       fullscreenInterval = configData.fullscreen_interval ?? fullscreenInterval
       fullscreenDuration = configData.fullscreen_duration ?? fullscreenDuration
-      latitude = configData.latitude ?? latitude
-      longitude = configData.longitude ?? longitude
-      method = configData.calculation_method ?? method
+      provinsi = configData.provinsi ?? provinsi
+      kabkota = configData.kabkota ?? kabkota
       prayerDurations = {
         subuh: configData.prayer_duration_subuh ?? 15,
         dzuhur: configData.prayer_duration_dzuhur ?? 15,
@@ -173,7 +174,7 @@ export default async function TVPage() {
     } catch { /* no config */ }
   }
 
-  // Try fetching from Supabase (gracefully fallback to demo data)
+  // Fetch from Supabase — use result directly (even if empty)
   try {
     const { createClient } = await import('@/lib/supabase/server')
     const supabase = await createClient()
@@ -207,14 +208,26 @@ export default async function TVPage() {
         .eq('status', 'active'),
     ])
 
-    if (eventsRes.data?.length) events = eventsRes.data
-    if (donationsRes.data?.length) donations = donationsRes.data
+    // Use Supabase data directly — even empty arrays are valid
+    if (eventsRes.data) events = eventsRes.data
+    if (donationsRes.data) donations = donationsRes.data
     if (financeRes.data) finance = financeRes.data
-    if (announcementsRes.data?.length) announcements = announcementsRes.data
-    if (hadithsRes.data?.length) hadiths = hadithsRes.data
+    if (announcementsRes.data) announcements = announcementsRes.data
+    if (hadithsRes.data) hadiths = hadithsRes.data
+    supabaseConnected = true
   } catch {
-    // Supabase not configured yet, use demo data
+    // Supabase not configured — use demo data as fallback
     console.log('Using demo data (Supabase not configured)')
+    supabaseConnected = false
+  }
+
+  // Only use demo data when Supabase is completely unavailable
+  if (!supabaseConnected) {
+    events = demoEvents
+    donations = demoDonations
+    finance = demoFinance
+    announcements = demoAnnouncements
+    hadiths = demoHadiths
   }
 
   return (
@@ -231,9 +244,8 @@ export default async function TVPage() {
       fullscreenInterval={fullscreenInterval}
       fullscreenDuration={fullscreenDuration}
       prayerDurations={prayerDurations}
-      latitude={latitude}
-      longitude={longitude}
-      method={method}
+      provinsi={provinsi}
+      kabkota={kabkota}
     />
   )
 }

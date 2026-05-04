@@ -33,9 +33,8 @@ interface TVDisplayProps {
   fullscreenInterval?: number
   fullscreenDuration?: number
   prayerDurations?: Record<PrayerName, number>
-  latitude?: number
-  longitude?: number
-  method?: number
+  provinsi?: string
+  kabkota?: string
 }
 
 export default function TVDisplay({
@@ -57,9 +56,8 @@ export default function TVDisplay({
     maghrib: 10,
     isya: 15,
   },
-  latitude = -6.2088,
-  longitude = 106.8456,
-  method = 20,
+  provinsi = 'DKI Jakarta',
+  kabkota = 'Kota Jakarta',
 }: TVDisplayProps) {
   const [events, setEvents] = useState(initialEvents)
   const [donations, setDonations] = useState(initialDonations)
@@ -84,7 +82,7 @@ export default function TVDisplay({
     iqamahTriggered,
     iqamahCountdown,
     clearTriggers,
-  } = usePrayerTimes(latitude, longitude, method)
+  } = usePrayerTimes(provinsi, kabkota)
 
   // TV display mode state machine
   const { mode, activePrayer, blankRemaining } = useTVDisplayMode(

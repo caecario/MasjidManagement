@@ -40,9 +40,8 @@ function parseTime(t: string): number {
 }
 
 export function usePrayerTimes(
-  latitude: number = -6.2088,
-  longitude: number = 106.8456,
-  method: number = 20
+  provinsi: string = 'DKI Jakarta',
+  kabkota: string = 'Kota Jakarta'
 ): UsePrayerTimesReturn {
   const [prayers, setPrayers] = useState<PrayerSchedule>({
     subuh: '04:45',
@@ -68,28 +67,36 @@ export function usePrayerTimes(
     setIqamahTriggered(null)
   }, [])
 
-  // Fetch from AlAdhan API
+  // Fetch from eQuran.id API
   useEffect(() => {
     async function fetchPrayers() {
       try {
         const today = new Date()
-        const dateStr = `${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}`
-        const url = `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${latitude}&longitude=${longitude}&method=${method}`
+        const bulan = today.getMonth() + 1
+        const tahun = today.getFullYear()
+        const todayDate = today.getDate()
 
-        const res = await fetch(url)
+        const res = await fetch('https://equran.id/api/v2/shalat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ provinsi, kabkota, bulan, tahun }),
+        })
         const data = await res.json()
 
-        if (data.code === 200) {
-          const t = data.data.timings
-          // Strip timezone suffix e.g. "04:45 (WIB)" → "04:45"
-          const clean = (s: string) => s.replace(/\s*\(.*\)$/, '').trim()
-          setPrayers({
-            subuh: clean(t.Fajr),
-            dzuhur: clean(t.Dhuhr),
-            ashar: clean(t.Asr),
-            maghrib: clean(t.Maghrib),
-            isya: clean(t.Isha),
-          })
+        if (data.code === 200 && data.data?.jadwal) {
+          // Find today's schedule from the monthly jadwal array
+          const todaySchedule = data.data.jadwal.find(
+            (j: { tanggal: number }) => j.tanggal === todayDate
+          )
+          if (todaySchedule) {
+            setPrayers({
+              subuh: todaySchedule.subuh,
+              dzuhur: todaySchedule.dzuhur,
+              ashar: todaySchedule.ashar,
+              maghrib: todaySchedule.maghrib,
+              isya: todaySchedule.isya,
+            })
+          }
         }
       } catch (err) {
         console.error('Failed to fetch prayer times:', err)
@@ -99,7 +106,7 @@ export function usePrayerTimes(
     }
 
     fetchPrayers()
-  }, [latitude, longitude, method])
+  }, [provinsi, kabkota])
 
   // Reset fired triggers at midnight
   useEffect(() => {

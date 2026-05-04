@@ -10,9 +10,8 @@ interface MosqueConfig {
   qris_url: string | null
   city: string
   country: string
-  latitude: number
-  longitude: number
-  method: number
+  provinsi: string
+  kabkota: string
   fullscreen_interval: number
   fullscreen_duration: number
   prayer_duration_subuh: number
@@ -38,9 +37,8 @@ export default function SettingsPage() {
     qris_url: null,
     city: 'Jakarta',
     country: 'ID',
-    latitude: -6.2088,
-    longitude: 106.8456,
-    method: 20,
+    provinsi: 'DKI Jakarta',
+    kabkota: 'Kota Jakarta',
     fullscreen_interval: 5,
     fullscreen_duration: 30,
     prayer_duration_subuh: 15,
@@ -55,10 +53,50 @@ export default function SettingsPage() {
   const logoInputRef = useRef<HTMLInputElement>(null)
   const qrisInputRef = useRef<HTMLInputElement>(null)
 
+  // Province / City lists from eQuran API
+  const [provinsiList, setProvinsiList] = useState<string[]>([])
+  const [kabkotaList, setKabkotaList] = useState<string[]>([])
+  const [loadingProvinsi, setLoadingProvinsi] = useState(true)
+  const [loadingKabkota, setLoadingKabkota] = useState(false)
+
   // Load config on mount
   useEffect(() => {
     fetch('/api/config').then(r => r.json()).then(data => setConfig(prev => ({ ...prev, ...data }))).catch(() => {})
   }, [])
+
+  // Fetch province list on mount
+  useEffect(() => {
+    fetch('https://equran.id/api/v2/shalat/provinsi')
+      .then(r => r.json())
+      .then(data => {
+        if (data.code === 200) setProvinsiList(data.data)
+      })
+      .catch(() => {})
+      .finally(() => setLoadingProvinsi(false))
+  }, [])
+
+  // Fetch kabkota list when provinsi changes
+  useEffect(() => {
+    if (!config.provinsi) return
+    setLoadingKabkota(true)
+    fetch('https://equran.id/api/v2/shalat/kabkota', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provinsi: config.provinsi }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.code === 200) {
+          setKabkotaList(data.data)
+          // Auto-select first kabkota if current one is not in list
+          if (!data.data.includes(config.kabkota) && data.data.length > 0) {
+            setConfig(prev => ({ ...prev, kabkota: data.data[0] }))
+          }
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingKabkota(false))
+  }, [config.provinsi]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const showMsg = (msg: string) => {
     setMessage(msg)
@@ -217,32 +255,39 @@ export default function SettingsPage() {
           <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>📍 Lokasi & Waktu Sholat</h2>
           <div className="flex flex-col gap-md">
             <div className="form-group">
-              <label className="form-label">Kota</label>
-              <input className="form-input" value={config.city} onChange={(e) => setConfig(prev => ({ ...prev, city: e.target.value }))} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Negara</label>
-              <input className="form-input" value={config.country} onChange={(e) => setConfig(prev => ({ ...prev, country: e.target.value }))} />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div className="form-group">
-                <label className="form-label">Latitude</label>
-                <input className="form-input" type="number" step="0.0001" value={config.latitude} onChange={(e) => setConfig(prev => ({ ...prev, latitude: parseFloat(e.target.value) }))} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Longitude</label>
-                <input className="form-input" type="number" step="0.0001" value={config.longitude} onChange={(e) => setConfig(prev => ({ ...prev, longitude: parseFloat(e.target.value) }))} />
-              </div>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Metode Perhitungan</label>
-              <select className="form-input form-select" value={config.method} onChange={(e) => setConfig(prev => ({ ...prev, method: parseInt(e.target.value) }))}>
-                <option value={20}>Kemenag RI</option>
-                <option value={11}>JAKIM (Malaysia)</option>
-                <option value={3}>MWL</option>
-                <option value={2}>ISNA</option>
-                <option value={4}>Umm al-Qura</option>
+              <label className="form-label">Provinsi</label>
+              <select
+                className="form-input form-select"
+                value={config.provinsi}
+                onChange={(e) => setConfig(prev => ({ ...prev, provinsi: e.target.value }))}
+                disabled={loadingProvinsi}
+              >
+                {loadingProvinsi ? (
+                  <option>Memuat provinsi...</option>
+                ) : (
+                  provinsiList.map(p => <option key={p} value={p}>{p}</option>)
+                )}
               </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Kabupaten / Kota</label>
+              <select
+                className="form-input form-select"
+                value={config.kabkota}
+                onChange={(e) => setConfig(prev => ({ ...prev, kabkota: e.target.value }))}
+                disabled={loadingKabkota}
+              >
+                {loadingKabkota ? (
+                  <option>Memuat kab/kota...</option>
+                ) : (
+                  kabkotaList.map(k => <option key={k} value={k}>{k}</option>)
+                )}
+              </select>
+            </div>
+            <div style={{ background: 'var(--green-50)', border: '1px solid var(--green-200)', borderRadius: 'var(--radius-md)', padding: '0.75rem' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--green-700)' }}>
+                💡 Data jadwal sholat dari <strong>Kemenag RI</strong> via eQuran.id API. Pilih provinsi dan kab/kota untuk menentukan jadwal waktu sholat yang ditampilkan di TV.
+              </p>
             </div>
           </div>
         </div>

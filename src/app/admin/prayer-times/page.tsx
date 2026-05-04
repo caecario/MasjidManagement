@@ -19,11 +19,6 @@ interface PrayerEntry {
 
 type PrayerMap = Record<string, PrayerEntry>
 
-/** Strip timezone suffix e.g. "04:45 (WIB)" → "04:45" */
-function cleanTime(s: string): string {
-  return s.replace(/\s*\(.*\)$/, '').trim()
-}
-
 export default function PrayerTimesPage() {
   const [prayers, setPrayers] = useState<PrayerMap>({
     subuh: { time: '--:--', iqamah: 10 },
@@ -36,33 +31,42 @@ export default function PrayerTimesPage() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
 
-  // On mount: fetch config → call AlAdhan with same lat/long/method as TV
+  // On mount: fetch config → call eQuran.id with same provinsi/kabkota as TV
   useEffect(() => {
     async function load() {
       try {
-        // 1. Get mosque config (lat/long/method)
+        // 1. Get mosque config (provinsi/kabkota)
         const cfgRes = await fetch('/api/config')
         const cfg = await cfgRes.json()
-        const lat = cfg.latitude ?? -6.2088
-        const lng = cfg.longitude ?? 106.8456
-        const method = cfg.method ?? 20
+        const provinsi = cfg.provinsi ?? 'DKI Jakarta'
+        const kabkota = cfg.kabkota ?? 'Kota Jakarta'
 
-        // 2. Call AlAdhan API (same as TV)
+        // 2. Call eQuran.id API (same as TV)
         const today = new Date()
-        const dateStr = `${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}`
-        const url = `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${lat}&longitude=${lng}&method=${method}`
-        const res = await fetch(url)
+        const bulan = today.getMonth() + 1
+        const tahun = today.getFullYear()
+        const todayDate = today.getDate()
+
+        const res = await fetch('https://equran.id/api/v2/shalat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ provinsi, kabkota, bulan, tahun }),
+        })
         const data = await res.json()
 
-        if (data.code === 200) {
-          const t = data.data.timings
-          setPrayers(prev => ({
-            subuh: { time: cleanTime(t.Fajr), iqamah: prev.subuh.iqamah },
-            dzuhur: { time: cleanTime(t.Dhuhr), iqamah: prev.dzuhur.iqamah },
-            ashar: { time: cleanTime(t.Asr), iqamah: prev.ashar.iqamah },
-            maghrib: { time: cleanTime(t.Maghrib), iqamah: prev.maghrib.iqamah },
-            isya: { time: cleanTime(t.Isha), iqamah: prev.isya.iqamah },
-          }))
+        if (data.code === 200 && data.data?.jadwal) {
+          const todaySchedule = data.data.jadwal.find(
+            (j: { tanggal: number }) => j.tanggal === todayDate
+          )
+          if (todaySchedule) {
+            setPrayers(prev => ({
+              subuh: { time: todaySchedule.subuh, iqamah: prev.subuh.iqamah },
+              dzuhur: { time: todaySchedule.dzuhur, iqamah: prev.dzuhur.iqamah },
+              ashar: { time: todaySchedule.ashar, iqamah: prev.ashar.iqamah },
+              maghrib: { time: todaySchedule.maghrib, iqamah: prev.maghrib.iqamah },
+              isya: { time: todaySchedule.isya, iqamah: prev.isya.iqamah },
+            }))
+          }
         }
 
         // 3. Load iqamah overrides from Supabase prayer_times table
@@ -133,7 +137,7 @@ export default function PrayerTimesPage() {
           <span style={{ fontSize: '1.25rem' }}>ℹ️</span>
           <div>
             <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--green-800)' }}>
-              Waktu sholat otomatis diambil dari API AlAdhan sesuai setting lokasi
+              Waktu sholat otomatis diambil dari eQuran.id (Kemenag RI) sesuai setting lokasi
             </p>
             <p style={{ fontSize: '0.8125rem', color: 'var(--green-700)' }}>
               Waktu di bawah sama persis dengan yang ditampilkan di TV. Anda bisa mengatur jeda iqamah.
@@ -162,7 +166,7 @@ export default function PrayerTimesPage() {
 
         {loading ? (
           <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--gray-400)' }}>
-            ⏳ Mengambil waktu sholat dari AlAdhan...
+            ⏳ Mengambil waktu sholat dari eQuran.id...
           </div>
         ) : (
           <div className="table-wrapper">
@@ -170,7 +174,7 @@ export default function PrayerTimesPage() {
               <thead>
                 <tr>
                   <th>Sholat</th>
-                  <th>Waktu Adzan (AlAdhan)</th>
+                  <th>Waktu Adzan (eQuran.id)</th>
                   <th>Jeda Iqamah (menit)</th>
                   <th>Waktu Iqamah</th>
                 </tr>

@@ -10,9 +10,8 @@ export interface MosqueConfig {
   qris_url: string | null
   city: string
   country: string
-  latitude: number
-  longitude: number
-  calculation_method: number
+  provinsi: string
+  kabkota: string
   fullscreen_interval: number
   fullscreen_duration: number
   prayer_duration_subuh: number
