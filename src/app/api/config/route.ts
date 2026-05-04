@@ -17,6 +17,7 @@ const DEFAULT_CONFIG = {
   prayer_duration_ashar: 15,
   prayer_duration_maghrib: 10,
   prayer_duration_isya: 15,
+  theme: 'ruby_red',
 }
 
 // Try Supabase first, then local JSON
@@ -45,6 +46,7 @@ async function getConfigFromSupabase() {
     prayer_duration_ashar: data.prayer_duration_ashar,
     prayer_duration_maghrib: data.prayer_duration_maghrib,
     prayer_duration_isya: data.prayer_duration_isya,
+    theme: data.theme,
   }
 }
 
@@ -83,6 +85,7 @@ async function saveConfigToSupabase(config: Record<string, unknown>) {
   if (config.prayer_duration_ashar !== undefined) dbData.prayer_duration_ashar = config.prayer_duration_ashar
   if (config.prayer_duration_maghrib !== undefined) dbData.prayer_duration_maghrib = config.prayer_duration_maghrib
   if (config.prayer_duration_isya !== undefined) dbData.prayer_duration_isya = config.prayer_duration_isya
+  if (config.theme !== undefined) dbData.theme = config.theme
 
   // Get existing config row
   const { data: existing } = await supabase.from('mosque_config').select('id').limit(1).single()

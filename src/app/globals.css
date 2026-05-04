@@ -1040,17 +1040,17 @@ h6 {
 }
 
 .template-kajian-rutin {
-  background: linear-gradient(135deg, #790E18 0%, #5A0A12 60%, #790E18 100%);
+  background: linear-gradient(135deg, var(--green-900) 0%, color-mix(in srgb, var(--green-900) 70%, black) 60%, var(--green-900) 100%);
   color: var(--white);
 }
 
 .template-sholat-jumat {
-  background: linear-gradient(135deg, #790E18 0%, #9B111E 100%);
+  background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 100%);
   color: var(--white);
 }
 
 .template-kajian-spesial {
-  background: linear-gradient(135deg, #772818 0%, #995041 100%);
+  background: linear-gradient(135deg, var(--green-800) 0%, var(--green-600) 100%);
   color: var(--white);
 }
 
@@ -1551,7 +1551,7 @@ h6 {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, #3D0709 0%, #790E18 30%, #772818 70%, #790E18 100%);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--green-900) 50%, black) 0%, var(--green-900) 30%, var(--green-800) 70%, var(--green-900) 100%);
   animation: adhanFadeIn 0.6s ease forwards;
 }
 

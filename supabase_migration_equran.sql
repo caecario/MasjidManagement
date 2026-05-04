@@ -9,3 +9,6 @@ ALTER TABLE mosque_config ADD COLUMN IF NOT EXISTS kabkota TEXT DEFAULT 'Kota Ja
 ALTER TABLE mosque_config DROP COLUMN IF EXISTS latitude;
 ALTER TABLE mosque_config DROP COLUMN IF EXISTS longitude;
 ALTER TABLE mosque_config DROP COLUMN IF EXISTS calculation_method;
+
+-- 3. Add theme column
+ALTER TABLE mosque_config ADD COLUMN IF NOT EXISTS theme TEXT DEFAULT 'ruby_red';

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import { THEME_PRESETS } from '@/lib/themes'
 
 interface MosqueConfig {
   mosque_name: string
@@ -19,6 +20,7 @@ interface MosqueConfig {
   prayer_duration_ashar: number
   prayer_duration_maghrib: number
   prayer_duration_isya: number
+  theme: string
 }
 
 const prayerLabels: Record<string, string> = {
@@ -46,6 +48,7 @@ export default function SettingsPage() {
     prayer_duration_ashar: 15,
     prayer_duration_maghrib: 10,
     prayer_duration_isya: 15,
+    theme: 'ruby_red',
   })
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -387,6 +390,58 @@ export default function SettingsPage() {
               </table>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Theme Selector — full width */}
+      <div className="card" style={{ marginTop: '1.5rem' }}>
+        <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>🎨 Tema Warna</h2>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--gray-500)', marginBottom: '1rem' }}>
+          Pilih tema warna untuk tampilan TV dan admin panel. Perubahan berlaku setelah simpan + refresh.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
+          {THEME_PRESETS.map(theme => {
+            const isSelected = config.theme === theme.id
+            return (
+              <button
+                key={theme.id}
+                onClick={() => {
+                  setConfig(prev => ({ ...prev, theme: theme.id }))
+                  // Live preview: apply CSS vars to document
+                  Object.entries(theme.vars).forEach(([key, value]) => {
+                    document.documentElement.style.setProperty(key, value)
+                  })
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.75rem 1rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: isSelected ? `2px solid ${theme.vars['--green-700']}` : '2px solid var(--gray-200)',
+                  background: isSelected ? theme.vars['--green-50'] : 'var(--white)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  textAlign: 'left',
+                }}
+              >
+                {/* Color swatches */}
+                <div style={{ display: 'flex', gap: '2px', flexShrink: 0 }}>
+                  {[theme.vars['--green-900'], theme.vars['--green-700'], theme.vars['--green-500'], theme.vars['--green-300'], theme.vars['--green-100']].map((c, i) => (
+                    <div key={i} style={{ width: 16, height: 28, borderRadius: 3, background: c }} />
+                  ))}
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 600, color: isSelected ? theme.vars['--green-800'] : 'var(--gray-800)' }}>
+                    {theme.emoji} {theme.label}
+                  </div>
+                  {isSelected && (
+                    <div style={{ fontSize: '0.7rem', color: theme.vars['--green-600'], fontWeight: 500 }}>✓ Aktif</div>
+                  )}
+                </div>
+              </button>
+            )
+          })}
         </div>
       </div>
 
