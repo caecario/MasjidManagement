@@ -1,21 +1,21 @@
 /* ═══════════════════════════════════════════════════════════════
    MASJID TV APP — Design System
-   Premium mosque theme: Ruby Red, Gold accents, Cream backgrounds
+   Premium mosque theme: Ruby Red, Gold accents, Warm backgrounds
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── CSS Custom Properties ─────────────────────────────────── */
 :root {
   /* Primary — Ruby Red */
-  --green-900: #3B0D1E;
-  --green-800: #5C1530;
-  --green-700: #7B1F3A;
-  --green-600: #9B2648;
-  --green-500: #B83058;
-  --green-400: #D44070;
-  --green-300: #E87898;
-  --green-200: #F2A5BB;
-  --green-100: #F9D0DC;
-  --green-50: #FDF0F4;
+  --green-900: #790E18;
+  --green-800: #772818;
+  --green-700: #9B111E;
+  --green-600: #995041;
+  --green-500: #9B4B52;
+  --green-400: #B1636A;
+  --green-300: #BB786A;
+  --green-200: #C67C82;
+  --green-100: #E0B5B9;
+  --green-50: #F5E8EA;
 
   /* Gold — Accent */
   --gold-600: #B8860B;
@@ -26,10 +26,10 @@
   --gold-100: #FBF3DC;
 
   /* Cream — Backgrounds */
-  --cream-100: #F5EEF0;
-  --cream-200: #EDE3E6;
-  --cream-300: #DDD3D6;
-  --cream-50: #FDFBFC;
+  --cream-100: #F5EDEA;
+  --cream-200: #EDE2DE;
+  --cream-300: #DDD3CE;
+  --cream-50: #FDFAF9;
 
   /* Neutrals */
   --gray-900: #1A1A1A;
@@ -55,7 +55,7 @@
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
   --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.16);
-  --shadow-glow: 0 0 20px rgba(155, 38, 72, 0.2);
+  --shadow-glow: 0 0 20px rgba(155, 17, 30, 0.2);
 
   /* Border Radius */
   --radius-sm: 6px;
@@ -328,7 +328,7 @@ h6 {
 
 .form-input:focus {
   border-color: var(--green-500);
-  box-shadow: 0 0 0 3px rgba(155, 38, 72, 0.12);
+  box-shadow: 0 0 0 3px rgba(155, 17, 30, 0.12);
 }
 
 .form-input::placeholder {
@@ -1040,17 +1040,17 @@ h6 {
 }
 
 .template-kajian-rutin {
-  background: linear-gradient(135deg, #3B0D1E 0%, #2A0816 60%, #3B0D1E 100%);
+  background: linear-gradient(135deg, #790E18 0%, #5A0A12 60%, #790E18 100%);
   color: var(--white);
 }
 
 .template-sholat-jumat {
-  background: linear-gradient(135deg, #3B0D1E 0%, #7B1F3A 100%);
+  background: linear-gradient(135deg, #790E18 0%, #9B111E 100%);
   color: var(--white);
 }
 
 .template-kajian-spesial {
-  background: linear-gradient(135deg, #5C1530 0%, #9B2648 100%);
+  background: linear-gradient(135deg, #772818 0%, #995041 100%);
   color: var(--white);
 }
 
@@ -1551,7 +1551,7 @@ h6 {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, #1A060E 0%, #3B0D1E 30%, #5C1530 70%, #3B0D1E 100%);
+  background: linear-gradient(160deg, #3D0709 0%, #790E18 30%, #772818 70%, #790E18 100%);
   animation: adhanFadeIn 0.6s ease forwards;
 }
 
@@ -1560,7 +1560,7 @@ h6 {
   inset: 0;
   background:
     radial-gradient(ellipse at 50% 30%, rgba(212, 168, 67, 0.12) 0%, transparent 60%),
-    radial-gradient(ellipse at 30% 70%, rgba(155, 38, 72, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 70%, rgba(155, 17, 30, 0.1) 0%, transparent 50%),
     radial-gradient(ellipse at 70% 80%, rgba(212, 168, 67, 0.08) 0%, transparent 50%);
   animation: glowPulse 4s ease-in-out infinite;
 }
