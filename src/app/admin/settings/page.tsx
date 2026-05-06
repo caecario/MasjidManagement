@@ -349,11 +349,11 @@ export default function SettingsPage() {
 
         {/* Prayer Blank Duration */}
         <div className="card">
-          <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>🕐 Durasi Waktu Sholat</h2>
+          <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>🕐 Durasi Standby Sholat</h2>
           <div className="flex flex-col gap-md">
             <div style={{ background: 'var(--green-50)', border: '1px solid var(--green-200)', borderRadius: 'var(--radius-md)', padding: '0.75rem' }}>
               <p style={{ fontSize: '0.8125rem', color: 'var(--green-700)' }}>
-                Saat <strong>adzan</strong> → suara beep + countdown iqamah. Saat <strong>iqamah</strong> → beep + layar hitam selama durasi di bawah.
+                Saat <strong>adzan</strong> → full-screen waktu sholat + countdown iqamah. Setelah <strong>iqamah</strong> → tetap full-screen selama durasi di bawah.
               </p>
             </div>
 
@@ -362,7 +362,7 @@ export default function SettingsPage() {
                 <thead>
                   <tr>
                     <th>Sholat</th>
-                    <th>Durasi Blank (menit)</th>
+                    <th>Durasi Standby (menit)</th>
                     <th>Keterangan</th>
                   </tr>
                 </thead>
@@ -382,7 +382,7 @@ export default function SettingsPage() {
                         />
                       </td>
                       <td style={{ fontSize: '0.8125rem', color: 'var(--gray-400)' }}>
-                        Layar blank setelah iqamah
+                        Tampil layar sholat setelah iqamah
                       </td>
                     </tr>
                   ))}

@@ -16,8 +16,7 @@ import HadithSlide from '@/components/tv/HadithSlide'
 import DonationPanel from '@/components/tv/DonationPanel'
 import FinancialSummary from '@/components/tv/FinancialSummary'
 import RunningText from '@/components/tv/RunningText'
-import AdhanOverlay from '@/components/tv/AdhanOverlay'
-import PrayerBlankScreen from '@/components/tv/PrayerBlankScreen'
+import PrayerActiveScreen from '@/components/tv/PrayerActiveScreen'
 import FullscreenSlide from '@/components/tv/FullscreenSlide'
 
 interface TVDisplayProps {
@@ -85,9 +84,10 @@ export default function TVDisplay({
   } = usePrayerTimes(provinsi, kabkota)
 
   // TV display mode state machine
-  const { mode, activePrayer, blankRemaining } = useTVDisplayMode(
+  const { mode, activePrayer, iqamahRemaining, standbyRemaining } = useTVDisplayMode(
     adhanTriggered,
     iqamahTriggered,
+    iqamahCountdown,
     clearTriggers,
     {
       fullscreenInterval,
@@ -184,18 +184,13 @@ export default function TVDisplay({
   }, [refetch])
 
   // ── Render based on mode ─────────────────────────────────
-  // Prayer blank screen
-  if (mode === 'prayer_blank' && activePrayer) {
-    return <PrayerBlankScreen prayer={activePrayer} remaining={blankRemaining} />
-  }
-
-  // Adhan / Iqamah countdown overlay
-  if ((mode === 'adhan' || mode === 'iqamah_countdown') && activePrayer) {
+  // Prayer active screen (adhan + iqamah countdown + standby)
+  if (mode === 'prayer_active' && activePrayer) {
     return (
-      <AdhanOverlay
+      <PrayerActiveScreen
         prayer={activePrayer}
-        iqamahCountdown={iqamahCountdown}
-        mode={mode}
+        iqamahRemaining={iqamahRemaining}
+        standbyRemaining={standbyRemaining}
       />
     )
   }

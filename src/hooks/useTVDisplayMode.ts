@@ -7,13 +7,16 @@ import { playAdhanBeep, playIqamahBeep } from './useBeepSound'
 interface TVDisplayConfig {
   fullscreenInterval: number  // minutes
   fullscreenDuration: number  // seconds
-  prayerDurations: Record<PrayerName, number>  // minutes per prayer
+  prayerDurations: Record<PrayerName, number>  // minutes — standby after iqamah
 }
 
 interface UseTVDisplayModeReturn {
   mode: TVDisplayMode
-  activePrayer: PrayerName | null  // which prayer triggered the current mode
-  blankRemaining: number | null    // seconds remaining in blank mode
+  activePrayer: PrayerName | null
+  /** seconds remaining on iqamah countdown (null = iqamah over) */
+  iqamahRemaining: number | null
+  /** seconds remaining on standby timer (null = not in standby) */
+  standbyRemaining: number | null
 }
 
 const DEFAULT_CONFIG: TVDisplayConfig = {
@@ -31,27 +34,25 @@ const DEFAULT_CONFIG: TVDisplayConfig = {
 export function useTVDisplayMode(
   adhanTriggered: PrayerName | null,
   iqamahTriggered: PrayerName | null,
+  iqamahCountdown: number | null,
   clearTriggers: () => void,
   config: TVDisplayConfig = DEFAULT_CONFIG
 ): UseTVDisplayModeReturn {
   const [mode, setMode] = useState<TVDisplayMode>('normal')
   const [activePrayer, setActivePrayer] = useState<PrayerName | null>(null)
-  const [blankRemaining, setBlankRemaining] = useState<number | null>(null)
+  const [standbyRemaining, setStandbyRemaining] = useState<number | null>(null)
 
   const fullscreenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const blankTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const blankEndRef = useRef<number | null>(null)
+  const standbyTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const standbyEndRef = useRef<number | null>(null)
 
   // ── Fullscreen cycle ─────────────────────────────────────
   const startFullscreenCycle = useCallback(() => {
-    // Don't start if in prayer-related modes
     if (fullscreenTimerRef.current) clearTimeout(fullscreenTimerRef.current)
 
     fullscreenTimerRef.current = setTimeout(() => {
       setMode(prev => {
-        // Only go fullscreen from normal mode
         if (prev !== 'normal') {
-          // Retry later
           startFullscreenCycle()
           return prev
         }
@@ -81,57 +82,56 @@ export function useTVDisplayMode(
     }
   }, [mode, startFullscreenCycle])
 
-  // ── Adhan trigger ────────────────────────────────────────
+  // ── Adhan trigger → enter prayer_active ──────────────────
   useEffect(() => {
     if (!adhanTriggered) return
 
-    // Interrupt any mode for adhan
-    setMode('adhan')
+    setMode('prayer_active')
     setActivePrayer(adhanTriggered)
+    setStandbyRemaining(null)
     playAdhanBeep()
     clearTriggers()
-
-    // After 5 seconds of adhan display, switch to iqamah countdown
-    const timer = setTimeout(() => {
-      setMode('iqamah_countdown')
-    }, 5000)
-
-    return () => clearTimeout(timer)
   }, [adhanTriggered, clearTriggers])
 
-  // ── Iqamah trigger ───────────────────────────────────────
+  // ── Iqamah trigger → start standby countdown ─────────────
   useEffect(() => {
     if (!iqamahTriggered) return
 
     playIqamahBeep()
-    clearTriggers()
 
-    // Start prayer blank screen
+    // Start standby timer (runs AFTER iqamah countdown finishes)
     const duration = config.prayerDurations[iqamahTriggered] || 15
     const endTime = Date.now() + duration * 60 * 1000
-    blankEndRef.current = endTime
+    standbyEndRef.current = endTime
 
-    setMode('prayer_blank')
     setActivePrayer(iqamahTriggered)
-    setBlankRemaining(duration * 60)
+    setStandbyRemaining(duration * 60)
 
-    // Countdown timer
-    blankTimerRef.current = setInterval(() => {
-      const remaining = Math.max(0, Math.ceil((blankEndRef.current! - Date.now()) / 1000))
-      setBlankRemaining(remaining)
+    standbyTimerRef.current = setInterval(() => {
+      const remaining = Math.max(0, Math.ceil((standbyEndRef.current! - Date.now()) / 1000))
+      setStandbyRemaining(remaining)
 
       if (remaining <= 0) {
-        if (blankTimerRef.current) clearInterval(blankTimerRef.current)
+        if (standbyTimerRef.current) clearInterval(standbyTimerRef.current)
         setMode('normal')
         setActivePrayer(null)
-        setBlankRemaining(null)
+        setStandbyRemaining(null)
       }
     }, 1000)
 
+    clearTriggers()
+
     return () => {
-      if (blankTimerRef.current) clearInterval(blankTimerRef.current)
+      if (standbyTimerRef.current) clearInterval(standbyTimerRef.current)
     }
   }, [iqamahTriggered, clearTriggers, config.prayerDurations])
 
-  return { mode, activePrayer, blankRemaining }
+  return {
+    mode,
+    activePrayer,
+    iqamahRemaining: mode === 'prayer_active' && iqamahCountdown && iqamahCountdown > 0
+      ? iqamahCountdown
+      : null,
+    standbyRemaining: mode === 'prayer_active' ? standbyRemaining : null,
+  }
 }

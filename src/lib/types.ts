@@ -127,7 +127,7 @@ export const TEMPLATE_LABELS: Record<TemplateType, string> = {
 }
 
 /* TV Display Mode */
-export type TVDisplayMode = 'normal' | 'fullscreen' | 'adhan' | 'iqamah_countdown' | 'prayer_blank'
+export type TVDisplayMode = 'normal' | 'fullscreen' | 'prayer_active'
 
 /* Prayer duration config keys */
 export const PRAYER_DURATION_KEYS: Record<PrayerName, keyof MosqueConfig> = {
