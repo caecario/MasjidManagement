@@ -156,8 +156,8 @@ export default async function TVPage() {
         isya: configData.prayer_duration_isya ?? 15,
       }
     }
-  } catch {
-    // Supabase not available, try local JSON
+  } catch (err: unknown) {
+    console.warn('Supabase config unavailable, trying local JSON:', err instanceof Error ? err.message : err)
     try {
       const fs = await import('fs/promises')
       const path = await import('path')
@@ -171,7 +171,9 @@ export default async function TVPage() {
       fullscreenInterval = config.fullscreen_interval ?? fullscreenInterval
       fullscreenDuration = config.fullscreen_duration ?? fullscreenDuration
       if (config.prayer_durations) prayerDurations = config.prayer_durations
-    } catch { /* no config */ }
+    } catch (err: unknown) {
+      console.warn('Local config unavailable:', err instanceof Error ? err.message : err)
+    }
   }
 
   // Fetch from Supabase — use result directly (even if empty)
@@ -215,9 +217,9 @@ export default async function TVPage() {
     if (announcementsRes.data) announcements = announcementsRes.data
     if (hadithsRes.data) hadiths = hadithsRes.data
     supabaseConnected = true
-  } catch {
+  } catch (err: unknown) {
     // Supabase not configured — use demo data as fallback
-    console.log('Using demo data (Supabase not configured)')
+    console.warn('Supabase unavailable, using demo data:', err instanceof Error ? err.message : err)
     supabaseConnected = false
   }
 

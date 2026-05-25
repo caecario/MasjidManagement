@@ -33,7 +33,7 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="admin-sidebar">
+    <aside className="admin-sidebar" role="complementary" aria-label="Menu navigasi admin">
       {/* Logo */}
       <div className="admin-sidebar-logo">
         <div className="admin-sidebar-logo-icon">🕌</div>

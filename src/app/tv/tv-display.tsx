@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useSlideRotation } from '@/hooks/useSlideRotation'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
@@ -65,10 +65,13 @@ export default function TVDisplay({
   const [hadiths, setHadiths] = useState(initialHadiths)
   const [audioEnabled, setAudioEnabled] = useState(false)
 
-  // Build slides array (events + hadiths interleaved)
-  const slides: Array<{ type: 'event'; data: Event } | { type: 'hadith'; data: Hadith }> = []
-  events.forEach((e) => slides.push({ type: 'event', data: e }))
-  hadiths.forEach((h) => slides.push({ type: 'hadith', data: h }))
+  // Build slides array (events + hadiths interleaved) — memoized
+  const slides = useMemo(() => {
+    const result: Array<{ type: 'event'; data: Event } | { type: 'hadith'; data: Hadith }> = []
+    events.forEach((e) => result.push({ type: 'event', data: e }))
+    hadiths.forEach((h) => result.push({ type: 'hadith', data: h }))
+    return result
+  }, [events, hadiths])
 
   const { activeIndex } = useSlideRotation(slides.length, 8000)
 
@@ -202,12 +205,14 @@ export default function TVDisplay({
 
   // Normal mode
   return (
-    <div className="tv-layout">
+    <div className="tv-layout" role="main" aria-label="Tampilan TV Masjid">
       <TVHeader logoUrl={logoUrl} mosqueName={mosqueName} tagline={tagline} />
 
       <div className="tv-body">
         {/* Left: Prayer Times */}
-        <PrayerTimesPanel prayers={prayers} currentPrayer={currentPrayer} nextPrayer={nextPrayer} />
+        <div aria-live="polite" aria-label="Jadwal sholat">
+          <PrayerTimesPanel prayers={prayers} currentPrayer={currentPrayer} nextPrayer={nextPrayer} />
+        </div>
 
         {/* Center: Slides + Financial */}
         <div className="tv-center">

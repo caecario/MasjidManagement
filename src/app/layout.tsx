@@ -29,7 +29,8 @@ async function getThemeId(): Promise<string> {
     const supabase = createClient(url, key)
     const { data } = await supabase.from('mosque_config').select('theme').limit(1).single()
     return data?.theme || 'ruby_red'
-  } catch {
+  } catch (err: unknown) {
+    console.warn('Theme fetch failed, using default:', err instanceof Error ? err.message : err)
     return 'ruby_red'
   }
 }

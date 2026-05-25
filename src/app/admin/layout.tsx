@@ -1,4 +1,5 @@
 import Sidebar from '@/components/admin/Sidebar'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 export default function AdminLayout({
   children,
@@ -6,11 +7,13 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="admin-layout">
-      <Sidebar />
-      <main className="admin-content">
-        {children}
-      </main>
-    </div>
+    <ErrorBoundary>
+      <div className="admin-layout">
+        <Sidebar />
+        <main className="admin-content" role="main">
+          {children}
+        </main>
+      </div>
+    </ErrorBoundary>
   )
 }

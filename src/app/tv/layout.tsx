@@ -1,11 +1,15 @@
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+
 export default function TVLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <div style={{ overflow: 'hidden', width: '100vw', height: '100vh' }}>
-      {children}
-    </div>
+    <ErrorBoundary>
+      <div style={{ overflow: 'hidden', width: '100vw', height: '100vh' }}>
+        {children}
+      </div>
+    </ErrorBoundary>
   )
 }

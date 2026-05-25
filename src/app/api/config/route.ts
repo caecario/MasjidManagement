@@ -56,7 +56,8 @@ async function getConfigFromLocal() {
     const path = await import('path')
     const data = await readFile(path.join(process.cwd(), 'public', 'mosque-config.json'), 'utf-8')
     return JSON.parse(data)
-  } catch {
+  } catch (err: unknown) {
+    console.warn('Local config read failed:', err instanceof Error ? err.message : err)
     return null
   }
 }
@@ -105,7 +106,8 @@ async function saveConfigToLocal(config: Record<string, unknown>) {
     const path = await import('path')
     await writeFile(path.join(process.cwd(), 'public', 'mosque-config.json'), JSON.stringify(config, null, 2))
     return true
-  } catch {
+  } catch (err: unknown) {
+    console.warn('Local config save failed:', err instanceof Error ? err.message : err)
     return false
   }
 }
@@ -124,6 +126,11 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    // Auth guard — only authenticated users can update config
+    const { requireAuth } = await import('@/lib/auth-guard')
+    const auth = await requireAuth()
+    if (!auth.authenticated) return auth.response
+
     const body = await request.json()
 
     // Try Supabase first

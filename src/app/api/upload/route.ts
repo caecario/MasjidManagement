@@ -39,6 +39,11 @@ async function uploadToSupabase(buffer: Buffer, filename: string, contentType: s
 
 export async function POST(request: NextRequest) {
   try {
+    // Auth guard — only authenticated users can upload
+    const { requireAuth } = await import('@/lib/auth-guard')
+    const auth = await requireAuth()
+    if (!auth.authenticated) return auth.response
+
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const type = formData.get('type') as string | null
