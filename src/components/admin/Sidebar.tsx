@@ -14,6 +14,7 @@ const MENU_SECTIONS = [
       { href: '/admin/finances', icon: '📈', label: 'Laporan Keuangan' },
       { href: '/admin/announcements', icon: '📢', label: 'Pengumuman (Running Text)' },
       { href: '/admin/hadiths', icon: '📖', label: 'Ayat & Hadits' },
+      { href: '/admin/media', icon: '🎵', label: 'Media (Murottal)' },
     ],
   },
   {

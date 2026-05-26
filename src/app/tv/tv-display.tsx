@@ -7,7 +7,7 @@ import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { usePrayerTimes } from '@/hooks/usePrayerTimes'
 import { useTVDisplayMode } from '@/hooks/useTVDisplayMode'
 import { resumeAudioContext } from '@/hooks/useBeepSound'
-import type { Event, Donation, Finance, Announcement, Hadith, PrayerName } from '@/lib/types'
+import type { Event, Donation, Finance, Announcement, Hadith, MediaItem, PrayerName } from '@/lib/types'
 
 import TVHeader from '@/components/tv/TVHeader'
 import PrayerTimesPanel from '@/components/tv/PrayerTimesPanel'
@@ -18,6 +18,7 @@ import FinancialSummary from '@/components/tv/FinancialSummary'
 import RunningText from '@/components/tv/RunningText'
 import PrayerActiveScreen from '@/components/tv/PrayerActiveScreen'
 import FullscreenSlide from '@/components/tv/FullscreenSlide'
+import TVMediaPlayer from '@/components/tv/TVMediaPlayer'
 
 interface TVDisplayProps {
   initialEvents: Event[]
@@ -25,6 +26,7 @@ interface TVDisplayProps {
   initialFinance: Finance | null
   initialAnnouncements: Announcement[]
   initialHadiths: Hadith[]
+  initialMediaItems: MediaItem[]
   logoUrl?: string | null
   qrisUrl?: string | null
   mosqueName?: string
@@ -42,6 +44,7 @@ export default function TVDisplay({
   initialFinance,
   initialAnnouncements,
   initialHadiths,
+  initialMediaItems,
   logoUrl,
   qrisUrl,
   mosqueName,
@@ -63,6 +66,7 @@ export default function TVDisplay({
   const [finance, setFinance] = useState(initialFinance)
   const [announcements, setAnnouncements] = useState(initialAnnouncements)
   const [hadiths, setHadiths] = useState(initialHadiths)
+  const [mediaItems, setMediaItems] = useState(initialMediaItems)
   const [audioEnabled, setAudioEnabled] = useState(false)
 
   // Build slides array (events + hadiths interleaved) — memoized
@@ -166,11 +170,20 @@ export default function TVDisplay({
         .eq('status', 'active')
       if (data) setHadiths(data)
     }
+
+    if (table === 'media_items') {
+      const { data } = await supabase
+        .from('media_items')
+        .select('*')
+        .eq('status', 'active')
+        .order('sort_order', { ascending: true })
+      if (data) setMediaItems(data)
+    }
   }, [])
 
   // Realtime sync (Supabase)
   useRealtimeSync(
-    ['events', 'donations', 'finances', 'announcements', 'hadiths'],
+    ['events', 'donations', 'finances', 'announcements', 'hadiths', 'media_items'],
     refetch
   )
 
@@ -182,6 +195,7 @@ export default function TVDisplay({
       await refetch('finances')
       await refetch('announcements')
       await refetch('hadiths')
+      await refetch('media_items')
     }, 60000)
     return () => clearInterval(interval)
   }, [refetch])
@@ -277,6 +291,12 @@ export default function TVDisplay({
           🔇 Klik layar untuk mengaktifkan suara
         </div>
       )}
+
+      {/* Media Player */}
+      <TVMediaPlayer
+        mediaItems={mediaItems}
+        muted={mode === 'prayer_active'}
+      />
     </div>
   )
 }

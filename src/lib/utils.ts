@@ -46,7 +46,7 @@ export function pad(n: number): string {
 export function getHijriDate(): string {
   // Uses Intl for approximate Hijri date
   try {
-    const formatter = new Intl.DateTimeFormat('id-u-ca-islamic', {
+    const formatter = new Intl.DateTimeFormat('id-u-ca-islamic-umalqura', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',

@@ -11,13 +11,21 @@ async function uploadToSupabase(buffer: Buffer, filename: string, contentType: s
   const supabase = createClient(url, key)
 
   // Ensure bucket exists (only works with service role key)
+  // Determine bucket based on content type
+  const isMedia = contentType.startsWith('audio/') || contentType.startsWith('video/')
+  const bucketName = isMedia ? 'media' : 'uploads'
+  const sizeLimit = isMedia ? 100 * 1024 * 1024 : 5 * 1024 * 1024
+  const allowedTypes = isMedia
+    ? ['audio/mpeg', 'audio/mp3', 'audio/ogg', 'audio/wav', 'audio/x-m4a', 'audio/mp4', 'video/mp4', 'video/webm']
+    : ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif']
+
   try {
     const { data: buckets } = await supabase.storage.listBuckets()
-    if (!buckets?.find(b => b.name === 'uploads')) {
-      await supabase.storage.createBucket('uploads', {
+    if (!buckets?.find(b => b.name === bucketName)) {
+      await supabase.storage.createBucket(bucketName, {
         public: true,
-        allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'],
-        fileSizeLimit: 5 * 1024 * 1024,
+        allowedMimeTypes: allowedTypes,
+        fileSizeLimit: sizeLimit,
       })
     }
   } catch (err) {
@@ -25,7 +33,7 @@ async function uploadToSupabase(buffer: Buffer, filename: string, contentType: s
   }
 
   const { error } = await supabase.storage
-    .from('uploads')
+    .from(bucketName)
     .upload(filename, buffer, { contentType, upsert: true })
 
   if (error) {
@@ -33,7 +41,7 @@ async function uploadToSupabase(buffer: Buffer, filename: string, contentType: s
     return null
   }
 
-  const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(filename)
+  const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(filename)
   return urlData.publicUrl
 }
 
@@ -49,8 +57,18 @@ export async function POST(request: NextRequest) {
     const type = formData.get('type') as string | null
 
     if (!file) return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
-    if (!file.type.startsWith('image/')) return NextResponse.json({ error: 'Only images allowed' }, { status: 400 })
-    if (file.size > 5 * 1024 * 1024) return NextResponse.json({ error: 'Max 5MB' }, { status: 400 })
+
+    const isImage = file.type.startsWith('image/')
+    const isAudio = file.type.startsWith('audio/')
+    const isVideo = file.type.startsWith('video/')
+    if (!isImage && !isAudio && !isVideo) {
+      return NextResponse.json({ error: 'Only images, audio, and video files allowed' }, { status: 400 })
+    }
+
+    const maxSize = (isAudio || isVideo) ? 100 * 1024 * 1024 : 5 * 1024 * 1024
+    if (file.size > maxSize) {
+      return NextResponse.json({ error: `Max ${(isAudio || isVideo) ? '100MB' : '5MB'}` }, { status: 400 })
+    }
 
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)

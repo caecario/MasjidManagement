@@ -1,5 +1,5 @@
 import TVDisplay from './tv-display'
-import type { Event, Donation, Finance, Announcement, Hadith } from '@/lib/types'
+import type { Event, Donation, Finance, Announcement, Hadith, MediaItem } from '@/lib/types'
 
 // Disable all caching — TV must always show latest data
 export const dynamic = 'force-dynamic'
@@ -116,6 +116,7 @@ export default async function TVPage() {
   let finance: Finance | null = null
   let announcements: Announcement[] = []
   let hadiths: Hadith[] = []
+  let mediaItems: MediaItem[] = []
   let supabaseConnected = false
 
   // Read mosque config — try Supabase first, then local JSON
@@ -181,7 +182,7 @@ export default async function TVPage() {
     const { createClient } = await import('@/lib/supabase/server')
     const supabase = await createClient()
 
-    const [eventsRes, donationsRes, financeRes, announcementsRes, hadithsRes] = await Promise.all([
+    const [eventsRes, donationsRes, financeRes, announcementsRes, hadithsRes, mediaRes] = await Promise.all([
       supabase
         .from('events')
         .select('*')
@@ -208,6 +209,11 @@ export default async function TVPage() {
         .from('hadiths')
         .select('*')
         .eq('status', 'active'),
+      supabase
+        .from('media_items')
+        .select('*')
+        .eq('status', 'active')
+        .order('sort_order', { ascending: true }),
     ])
 
     // Use Supabase data directly — even empty arrays are valid
@@ -216,6 +222,7 @@ export default async function TVPage() {
     if (financeRes.data) finance = financeRes.data
     if (announcementsRes.data) announcements = announcementsRes.data
     if (hadithsRes.data) hadiths = hadithsRes.data
+    if (mediaRes.data) mediaItems = mediaRes.data
     supabaseConnected = true
   } catch (err: unknown) {
     // Supabase not configured — use demo data as fallback
@@ -239,6 +246,7 @@ export default async function TVPage() {
       initialFinance={finance}
       initialAnnouncements={announcements}
       initialHadiths={hadiths}
+      initialMediaItems={mediaItems}
       logoUrl={logoUrl}
       qrisUrl={qrisUrl}
       mosqueName={mosqueName}

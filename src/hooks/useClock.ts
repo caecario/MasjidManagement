@@ -14,12 +14,12 @@ const gregorianFmt = new Intl.DateTimeFormat('id-ID', {
 let hijriFmt: Intl.DateTimeFormat | null = null
 let hijriPartsFmt: Intl.DateTimeFormat | null = null
 try {
-  hijriFmt = new Intl.DateTimeFormat('id-u-ca-islamic', {
+  hijriFmt = new Intl.DateTimeFormat('id-u-ca-islamic-umalqura', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   })
-  hijriPartsFmt = new Intl.DateTimeFormat('en-u-ca-islamic', {
+  hijriPartsFmt = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
     day: 'numeric',
     month: 'numeric',
     year: 'numeric',

@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-type TableName = 'events' | 'donations' | 'finances' | 'announcements' | 'hadiths' | 'prayer_times' | 'mosque_config'
+type TableName = 'events' | 'donations' | 'finances' | 'announcements' | 'hadiths' | 'prayer_times' | 'mosque_config' | 'media_items'
 
 /**
  * Subscribe to realtime changes on specified tables.

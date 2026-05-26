@@ -89,6 +89,26 @@ export interface Hadith {
   created_at: string
 }
 
+export type MediaSourceType = 'upload' | 'youtube' | 'url'
+export type MediaType = 'audio' | 'video'
+export type ScheduleType = 'always' | 'manual' | 'hijri_range' | 'prayer_time'
+
+export interface MediaItem {
+  id: string
+  title: string
+  media_type: MediaType
+  source_type: MediaSourceType
+  source_url: string
+  status: 'active' | 'inactive'
+  autoplay: boolean
+  loop: boolean
+  schedule_type: ScheduleType
+  schedule_start: string | null   // e.g. "12-1" (Dzulhijjah 1) or prayer name
+  schedule_end: string | null     // e.g. "12-13" (Dzulhijjah 13)
+  sort_order: number
+  created_at: string
+}
+
 export interface Profile {
   id: string
   name: string | null
