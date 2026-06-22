@@ -224,11 +224,14 @@ h6 {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   padding: 1.25rem;
-  transition: box-shadow var(--transition-normal);
+  transition-property: box-shadow, transform;
+  transition-duration: 250ms;
+  transition-timing-function: ease;
 }
 
 .card:hover {
   box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
 }
 
 .card-green {
@@ -557,6 +560,10 @@ h6 {
   animation: fadeIn 0.4s ease forwards;
 }
 
+.animate-scale-in {
+  animation: scaleIn 0.4s ease forwards;
+}
+
 .animate-slide-in {
   animation: slideIn 0.4s ease forwards;
 }
@@ -570,11 +577,22 @@ h6 {
 }
 
 /* ── TV Display Specific ───────────────────────────────────── */
+@keyframes ambientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
 .tv-layout {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
   background: linear-gradient(160deg, var(--cream-100) 0%, var(--cream-200) 50%, var(--cream-300) 100%);
+  background-size: 200% 200%;
+  animation: ambientShift 30s ease-in-out infinite;
   display: grid;
   grid-template-rows: auto 1fr auto;
   font-family: var(--font-sans);
@@ -803,11 +821,22 @@ h6 {
   transition-timing-function: ease;
 }
 
+@keyframes livePulse {
+  0%, 100% {
+    box-shadow: 0 4px 16px rgba(212, 168, 67, 0.3),
+                0 0 0 0 rgba(212, 168, 67, 0.15);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(212, 168, 67, 0.4),
+                0 0 0 4px rgba(212, 168, 67, 0.08);
+  }
+}
+
 .tv-prayer-item.active {
   background: linear-gradient(135deg, var(--gold-500), var(--gold-600));
   color: var(--green-900);
   font-weight: 700;
-  box-shadow: 0 4px 16px rgba(212, 168, 67, 0.3);
+  animation: livePulse 2.5s ease-in-out infinite;
   transform: scale(1.02);
 }
 
@@ -878,11 +907,17 @@ h6 {
   inset: 0;
   display: flex;
   opacity: 0;
-  transition: opacity 0.8s ease;
+  transform: scale(0.98);
+  filter: blur(2px);
+  transition-property: opacity, transform, filter;
+  transition-duration: 0.8s;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .tv-slide.active {
   opacity: 1;
+  transform: scale(1);
+  filter: blur(0);
 }
 
 /* TV Financial Summary */
@@ -1328,18 +1363,26 @@ h6 {
   align-items: flex-start;
   justify-content: space-between;
   border-left: 4px solid var(--green-600);
+  animation: fadeIn 0.5s ease both;
 }
+
+.stat-card:nth-child(1) { animation-delay: 0s; }
+.stat-card:nth-child(2) { animation-delay: 0.08s; }
+.stat-card:nth-child(3) { animation-delay: 0.16s; }
+.stat-card:nth-child(4) { animation-delay: 0.24s; }
 
 .stat-value {
   font-size: 1.75rem;
   font-weight: 800;
   color: var(--green-800);
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-label {
   font-size: 0.8125rem;
   color: var(--gray-500);
   margin-top: 0.125rem;
+  text-wrap: pretty;
 }
 
 .stat-icon {
@@ -1795,6 +1838,11 @@ h6 {
 }
 
 /* ── Audio Enable Hint ─────────────────────────────────────── */
+@keyframes hintPulse {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 0.5; }
+}
+
 .tv-audio-hint {
   position: fixed;
   bottom: 3rem;
@@ -1808,6 +1856,149 @@ h6 {
   font-size: 0.8125rem;
   font-weight: 500;
   backdrop-filter: blur(8px);
-  animation: fadeIn 0.5s ease forwards;
+  animation: fadeIn 0.5s ease forwards, hintPulse 2s ease-in-out 1s infinite;
   pointer-events: none;
+}
+
+/* ── Clock Blink ───────────────────────────────────────────── */
+@keyframes clockBlink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.3; }
+}
+
+.tv-clock-blink {
+  animation: clockBlink 1s step-end infinite;
+}
+
+/* ── Donation Crossfade ────────────────────────────────────── */
+.tv-donation-content {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.tv-donation-item {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+/* ── QRIS Inner Shadow ─────────────────────────────────────── */
+.tv-qris-card {
+  box-shadow: var(--shadow-sm), inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Toast ──────────────────────────────────────────────────── */
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toast {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  animation: toastIn 0.3s ease forwards;
+}
+
+.toast-success {
+  background: var(--green-50);
+  color: var(--green-700);
+}
+
+.toast-error {
+  background: #FFEBEE;
+  color: var(--danger);
+}
+
+/* ── Empty State ───────────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--gray-400);
+  gap: 0.75rem;
+}
+
+.empty-state-icon {
+  font-size: 2.5rem;
+  opacity: 0.5;
+}
+
+.empty-state-text {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-wrap: pretty;
+}
+
+.empty-state-hint {
+  font-size: 0.8125rem;
+  color: var(--gray-300);
+}
+
+/* ── Loading Skeleton ──────────────────────────────────────── */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.skeleton {
+  background: var(--gray-100);
+  border-radius: var(--radius-md);
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-card {
+  height: 80px;
+  border-radius: var(--radius-lg);
+}
+
+.skeleton-line {
+  height: 14px;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-line-short {
+  width: 60%;
+}
+
+/* ── Reduced Motion ────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .tv-layout {
+    animation: none;
+  }
+
+  .tv-slide {
+    filter: none;
+    transform: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .tv-prayer-item.active {
+    animation: none;
+    box-shadow: 0 4px 16px rgba(212, 168, 67, 0.3);
+  }
+
+  .tv-ticker-content {
+    animation-duration: 60s !important;
+    animation-iteration-count: infinite !important;
+  }
 }

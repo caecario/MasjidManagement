@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { MediaItem } from '@/lib/types'
@@ -35,6 +35,7 @@ export default function MediaPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [initialLoading, setInitialLoading] = useState(true)
 
   // Form state
   const [showForm, setShowForm] = useState(false)
@@ -50,16 +51,15 @@ export default function MediaPage() {
     schedule_end: '',
   })
 
-  const supabase = createClient()
-
   const showMsg = (msg: string) => {
     setMessage(msg)
     setTimeout(() => setMessage(''), 3000)
   }
 
   /* ── Fetch ───────────────────────────────────────── */
-  const fetchData = useCallback(async () => {
+  const fetchData = async () => {
     try {
+      const supabase = createClient()
       const { data, error } = await supabase
         .from('media_items')
         .select('*')
@@ -69,9 +69,12 @@ export default function MediaPage() {
         setUseSupabase(true)
       }
     } catch { /* not configured */ }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    setInitialLoading(false)
+  }
 
-  useEffect(() => { fetchData() }, [fetchData])
+  useEffect(() => {
+    void fetchData()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Upload file ─────────────────────────────────── */
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,6 +122,7 @@ export default function MediaPage() {
     }
 
     if (useSupabase) {
+      const supabase = createClient()
       const { error } = await supabase.from('media_items').insert(payload)
       if (error) {
         showMsg('⚠️ Gagal menyimpan: ' + error.message)
@@ -144,6 +148,7 @@ export default function MediaPage() {
   const handleToggle = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
     if (useSupabase) {
+      const supabase = createClient()
       await supabase.from('media_items').update({ status: newStatus }).eq('id', id)
       await fetchData()
     } else {
@@ -154,6 +159,7 @@ export default function MediaPage() {
   /* ── Toggle autoplay ─────────────────────────────── */
   const handleAutoplayToggle = async (id: string, current: boolean) => {
     if (useSupabase) {
+      const supabase = createClient()
       await supabase.from('media_items').update({ autoplay: !current }).eq('id', id)
       await fetchData()
     } else {
@@ -165,6 +171,7 @@ export default function MediaPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Hapus media ini?')) return
     if (useSupabase) {
+      const supabase = createClient()
       await supabase.from('media_items').delete().eq('id', id)
       await fetchData()
     } else {
@@ -396,14 +403,23 @@ export default function MediaPage() {
 
       {/* ── Media List ───────────────────────────── */}
       <div className="card" style={{ padding: 0 }}>
-        {items.length === 0 ? (
-          <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--gray-400)' }}>
-            Belum ada media. Klik &quot;+ Tambah Media&quot; untuk menambahkan murottal atau takbeer.
+        {initialLoading ? (
+          <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {[1, 2, 3].map(i => (
+              <div key={i} className="skeleton skeleton-card" style={{ height: 56 }} />
+            ))}
+          </div>
+        ) : items.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">🎵</div>
+            <div className="empty-state-text">Belum ada media</div>
+            <div className="empty-state-hint">Klik &quot;+ Tambah Media&quot; untuk menambahkan murottal atau takbeer</div>
           </div>
         ) : (
           items.map((item, i) => (
             <div
               key={item.id}
+              className="animate-fade-in"
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.75rem',
                 padding: '0.75rem 1rem',

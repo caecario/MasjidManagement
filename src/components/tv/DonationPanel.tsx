@@ -37,7 +37,7 @@ export default function DonationPanel({ donations }: DonationPanelProps) {
       )}
 
       {/* Content */}
-      <div style={{ padding: '0.5rem 0.75rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <div key={donation.id} className="tv-donation-item" style={{ padding: '0.5rem 0.75rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         {/* Header */}
         <div className="flex items-center justify-between" style={{ marginBottom: '0.25rem' }}>
           <div className="tv-donation-title" style={{ marginBottom: 0, fontSize: '0.625rem' }}>Program Donasi</div>

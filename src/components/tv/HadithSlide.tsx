@@ -13,6 +13,7 @@ export default function HadithSlide({ hadith }: HadithSlideProps) {
         fontSize: '3rem',
         marginBottom: '1rem',
         opacity: 0.3,
+        animation: 'scaleIn 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards',
       }}>
         ﷽
       </div>

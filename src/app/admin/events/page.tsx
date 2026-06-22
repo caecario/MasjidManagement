@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Event } from '@/lib/types'
@@ -19,24 +19,34 @@ export default function EventsPage() {
   const [filter, setFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
   const [useSupabase, setUseSupabase] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
+  const [message, setMessage] = useState('')
 
-  const supabase = createClient()
+  const showMsg = (msg: string) => {
+    setMessage(msg)
+    setTimeout(() => setMessage(''), 3000)
+  }
 
-  const fetchData = useCallback(async () => {
+  const fetchData = async () => {
     try {
+      const supabase = createClient()
       const { data, error } = await supabase.from('events').select('*').order('date', { ascending: true })
       if (!error && data?.length) {
         setItems(data)
         setUseSupabase(true)
       }
     } catch { /* not configured */ }
-  }, [])
+    setInitialLoading(false)
+  }
 
-  useEffect(() => { fetchData() }, [fetchData])
+  useEffect(() => {
+    void fetchData()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDelete = async (id: string) => {
     if (!confirm('Hapus event ini?')) return
     if (useSupabase) {
+      const supabase = createClient()
       await supabase.from('events').delete().eq('id', id)
       await fetchData()
     } else {
@@ -47,6 +57,7 @@ export default function EventsPage() {
   const handleToggle = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'draft' : 'active'
     if (useSupabase) {
+      const supabase = createClient()
       await supabase.from('events').update({ status: newStatus }).eq('id', id)
       await fetchData()
     } else {
@@ -71,6 +82,12 @@ export default function EventsPage() {
         </div>
         <Link href="/admin/events/new" className="btn btn-primary">+ Tambah Kajian / Event</Link>
       </div>
+
+      {message && (
+        <div className={`toast ${message.includes('✅') ? 'toast-success' : 'toast-error'}`}>
+          {message}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="card" style={{ marginBottom: '1rem' }}>
@@ -110,8 +127,25 @@ export default function EventsPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((event) => (
-                <tr key={event.id}>
+              {initialLoading ? (
+                [1, 2, 3].map(i => (
+                  <tr key={i}>
+                    <td colSpan={7}><div className="skeleton skeleton-line" /></td>
+                  </tr>
+                ))
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7}>
+                    <div className="empty-state">
+                      <div className="empty-state-icon">📅</div>
+                      <div className="empty-state-text">Belum ada kajian / event</div>
+                      <div className="empty-state-hint">Klik tombol &quot;+ Tambah&quot; untuk menambah event baru</div>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+              filtered.map((event) => (
+                <tr key={event.id} className="animate-fade-in">
                   <td>
                     <div className="flex items-center gap-sm">
                       <span style={{ fontSize: '1.25rem' }}>
@@ -146,7 +180,8 @@ export default function EventsPage() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              ))
+              )}
             </tbody>
           </table>
         </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Finance } from '@/lib/types'
@@ -22,20 +22,29 @@ export default function FinancesPage() {
   const [formIncome, setFormIncome] = useState('')
   const [formExpense, setFormExpense] = useState('')
   const [loading, setLoading] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
+  const [message, setMessage] = useState('')
 
-  const supabase = createClient()
+  const showMsg = (msg: string) => {
+    setMessage(msg)
+    setTimeout(() => setMessage(''), 3000)
+  }
 
-  const fetchData = useCallback(async () => {
+  const fetchData = async () => {
     try {
+      const supabase = createClient()
       const { data, error } = await supabase.from('finances').select('*').order('as_of_date', { ascending: false })
       if (!error && data?.length) {
         setItems(data)
         setUseSupabase(true)
       }
     } catch { /* not configured */ }
-  }, [])
+    setInitialLoading(false)
+  }
 
-  useEffect(() => { fetchData() }, [fetchData])
+  useEffect(() => {
+    void fetchData()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const resetForm = () => {
     setFormLabel('')
@@ -69,6 +78,7 @@ export default function FinancesPage() {
     if (editId) {
       // Update
       if (useSupabase) {
+        const supabase = createClient()
         await supabase.from('finances').update(payload).eq('id', editId)
         await fetchData()
       } else {
@@ -77,6 +87,7 @@ export default function FinancesPage() {
     } else {
       // Insert
       if (useSupabase) {
+        const supabase = createClient()
         await supabase.from('finances').insert(payload)
         await fetchData()
       } else {
@@ -86,11 +97,13 @@ export default function FinancesPage() {
 
     resetForm()
     setLoading(false)
+    showMsg('✅ Laporan berhasil disimpan')
   }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Hapus laporan ini?')) return
     if (useSupabase) {
+      const supabase = createClient()
       await supabase.from('finances').delete().eq('id', id)
       await fetchData()
     } else {
@@ -114,6 +127,12 @@ export default function FinancesPage() {
           {showForm && !editId ? '✕ Tutup' : '+ Tambah Laporan'}
         </button>
       </div>
+
+      {message && (
+        <div className={`toast ${message.includes('✅') ? 'toast-success' : 'toast-error'}`}>
+          {message}
+        </div>
+      )}
 
       {/* Add/Edit Form */}
       {showForm && (
@@ -188,8 +207,25 @@ export default function FinancesPage() {
               </tr>
             </thead>
             <tbody>
-              {items.map((f) => (
-                <tr key={f.id}>
+              {initialLoading ? (
+                [1, 2, 3].map(i => (
+                  <tr key={i}>
+                    <td colSpan={6}><div className="skeleton skeleton-line" /></td>
+                  </tr>
+                ))
+              ) : items.length === 0 ? (
+                <tr>
+                  <td colSpan={6}>
+                    <div className="empty-state">
+                      <div className="empty-state-icon">📊</div>
+                      <div className="empty-state-text">Belum ada laporan keuangan</div>
+                      <div className="empty-state-hint">Klik &quot;+ Tambah Laporan&quot; untuk mulai</div>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+              items.map((f) => (
+                <tr key={f.id} className="animate-fade-in">
                   <td style={{ fontWeight: 600 }}>{f.label}</td>
                   <td style={{ color: 'var(--gray-500)' }}>{f.as_of_date}</td>
                   <td style={{ color: 'var(--green-600)', fontWeight: 600 }}>{formatRupiah(f.total_income)}</td>
@@ -202,7 +238,8 @@ export default function FinancesPage() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              ))
+              )}
             </tbody>
           </table>
         </div>

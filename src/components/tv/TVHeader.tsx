@@ -91,8 +91,8 @@ export default function TVHeader({
         {/* Clock */}
         <div className="tv-clock">
           <div className="tv-clock-time">
-            {hours}:{minutes}
-            <span className="tv-clock-seconds">:{seconds}</span>
+            {hours}<span className="tv-clock-blink">:</span>{minutes}
+            <span className="tv-clock-seconds"><span className="tv-clock-blink">:</span>{seconds}</span>
           </div>
           <div className="tv-clock-label">WIB</div>
         </div>

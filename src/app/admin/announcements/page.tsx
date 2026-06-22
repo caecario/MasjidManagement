@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Announcement } from '@/lib/types'
@@ -23,26 +23,36 @@ export default function AnnouncementsPage() {
   const [editIcon, setEditIcon] = useState('📢')
   const [loading, setLoading] = useState(false)
   const [useSupabase, setUseSupabase] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
+  const [message, setMessage] = useState('')
 
-  const supabase = createClient()
+  const showMsg = (msg: string) => {
+    setMessage(msg)
+    setTimeout(() => setMessage(''), 3000)
+  }
 
-  const fetchData = useCallback(async () => {
+  const fetchData = async () => {
     try {
+      const supabase = createClient()
       const { data, error } = await supabase.from('announcements').select('*').order('sort_order', { ascending: true })
       if (!error && data?.length) {
         setItems(data)
         setUseSupabase(true)
       }
     } catch { /* not configured */ }
-  }, [])
+    setInitialLoading(false)
+  }
 
-  useEffect(() => { fetchData() }, [fetchData])
+  useEffect(() => {
+    void fetchData()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Add
   const handleAdd = async () => {
     if (!newText.trim()) return
     setLoading(true)
     if (useSupabase) {
+      const supabase = createClient()
       await supabase.from('announcements').insert({ text: newText.trim(), icon: newIcon, sort_order: items.length + 1, status: 'active' })
       await fetchData()
     } else {
@@ -51,6 +61,7 @@ export default function AnnouncementsPage() {
     setNewText('')
     setNewIcon('📢')
     setLoading(false)
+    showMsg('✅ Pengumuman berhasil ditambahkan')
   }
 
   // Start edit
@@ -64,6 +75,7 @@ export default function AnnouncementsPage() {
   const saveEdit = async () => {
     if (!editText.trim() || !editId) return
     if (useSupabase) {
+      const supabase = createClient()
       await supabase.from('announcements').update({ text: editText.trim(), icon: editIcon }).eq('id', editId)
       await fetchData()
     } else {
@@ -76,6 +88,7 @@ export default function AnnouncementsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Hapus pengumuman ini?')) return
     if (useSupabase) {
+      const supabase = createClient()
       await supabase.from('announcements').delete().eq('id', id)
       await fetchData()
     } else {
@@ -87,6 +100,7 @@ export default function AnnouncementsPage() {
   const handleToggle = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
     if (useSupabase) {
+      const supabase = createClient()
       await supabase.from('announcements').update({ status: newStatus }).eq('id', id)
       await fetchData()
     } else {
@@ -104,6 +118,12 @@ export default function AnnouncementsPage() {
           </div>
         </div>
       </div>
+
+      {message && (
+        <div className={`toast ${message.includes('✅') ? 'toast-success' : 'toast-error'}`}>
+          {message}
+        </div>
+      )}
 
       {/* Add new */}
       <div className="card" style={{ marginBottom: '1rem' }}>
@@ -128,8 +148,22 @@ export default function AnnouncementsPage() {
 
       {/* List */}
       <div className="card" style={{ padding: 0 }}>
+        {initialLoading ? (
+          <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {[1, 2, 3].map(i => (
+              <div key={i} className="skeleton skeleton-card" style={{ height: 48 }} />
+            ))}
+          </div>
+        ) : items.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">📢</div>
+            <div className="empty-state-text">Belum ada pengumuman</div>
+            <div className="empty-state-hint">Tambahkan pengumuman pertama di atas</div>
+          </div>
+        ) : (
+        <>
         {items.map((ann, i) => (
-          <div key={ann.id} style={{
+          <div key={ann.id} className="animate-fade-in" style={{
             display: 'flex', alignItems: 'center', gap: '0.75rem',
             padding: '0.625rem 1rem',
             borderBottom: i < items.length - 1 ? '1px solid var(--gray-100)' : 'none',
@@ -182,6 +216,8 @@ export default function AnnouncementsPage() {
             )}
           </div>
         ))}
+        </>
+        )}
       </div>
 
       {/* Preview */}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Hadith } from '@/lib/types'
@@ -17,26 +17,36 @@ export default function HadithsPage() {
   const [newSource, setNewSource] = useState('')
   const [loading, setLoading] = useState(false)
   const [useSupabase, setUseSupabase] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
+  const [message, setMessage] = useState('')
 
-  const supabase = createClient()
+  const showMsg = (msg: string) => {
+    setMessage(msg)
+    setTimeout(() => setMessage(''), 3000)
+  }
 
-  const fetchData = useCallback(async () => {
+  const fetchData = async () => {
     try {
+      const supabase = createClient()
       const { data, error } = await supabase.from('hadiths').select('*').order('created_at', { ascending: false })
       if (!error && data?.length) {
         setItems(data)
         setUseSupabase(true)
       }
     } catch { /* not configured */ }
-  }, [])
+    setInitialLoading(false)
+  }
 
-  useEffect(() => { fetchData() }, [fetchData])
+  useEffect(() => {
+    void fetchData()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAdd = async () => {
     if (!newContent.trim() || !newSource.trim()) return
     setLoading(true)
 
     if (useSupabase) {
+      const supabase = createClient()
       const { error } = await supabase.from('hadiths').insert({
         content: newContent.trim(),
         source: newSource.trim(),
@@ -61,6 +71,7 @@ export default function HadithsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Hapus hadits ini?')) return
     if (useSupabase) {
+      const supabase = createClient()
       await supabase.from('hadiths').delete().eq('id', id)
       await fetchData()
     } else {
@@ -71,6 +82,7 @@ export default function HadithsPage() {
   const handleToggle = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
     if (useSupabase) {
+      const supabase = createClient()
       await supabase.from('hadiths').update({ status: newStatus }).eq('id', id)
       await fetchData()
     } else {
@@ -88,6 +100,12 @@ export default function HadithsPage() {
           </div>
         </div>
       </div>
+
+      {message && (
+        <div className={`toast ${message.includes('✅') ? 'toast-success' : 'toast-error'}`}>
+          {message}
+        </div>
+      )}
 
       {/* Add new */}
       <div className="card" style={{ marginBottom: '1rem' }}>
@@ -116,8 +134,19 @@ export default function HadithsPage() {
 
       {/* List */}
       <div className="flex flex-col gap-md">
-        {items.map((h) => (
-          <div key={h.id} className="card">
+        {initialLoading ? (
+          [1, 2].map(i => (
+            <div key={i} className="skeleton skeleton-card" style={{ height: 120 }} />
+          ))
+        ) : items.length === 0 ? (
+          <div className="card empty-state">
+            <div className="empty-state-icon">📖</div>
+            <div className="empty-state-text">Belum ada ayat / hadits</div>
+            <div className="empty-state-hint">Tambahkan hadits pertama di form atas</div>
+          </div>
+        ) : (
+          items.map((h) => (
+          <div key={h.id} className="card animate-fade-in">
             <div className="flex justify-between items-center" style={{ marginBottom: '0.75rem' }}>
               <button
                 className={`badge ${h.status === 'active' ? 'badge-green' : 'badge-gray'}`}
@@ -143,7 +172,8 @@ export default function HadithsPage() {
               — {h.source}
             </p>
           </div>
-        ))}
+        ))
+        )}
       </div>
     </div>
   )

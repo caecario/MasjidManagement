@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Donation } from '@/lib/types'
@@ -15,24 +15,36 @@ const demoDonations: Donation[] = [
 export default function DonationsPage() {
   const [items, setItems] = useState<Donation[]>(demoDonations)
   const [useSupabase, setUseSupabase] = useState(false)
+  const supabaseRef = useRef(false)
+  const [initialLoading, setInitialLoading] = useState(true)
+  const [message, setMessage] = useState('')
 
-  const supabase = createClient()
+  const showMsg = (msg: string) => {
+    setMessage(msg)
+    setTimeout(() => setMessage(''), 3000)
+  }
 
-  const fetchData = useCallback(async () => {
+  const fetchData = async () => {
     try {
+      const supabase = createClient()
       const { data, error } = await supabase.from('donations').select('*').order('created_at', { ascending: false })
       if (!error && data?.length) {
         setItems(data)
         setUseSupabase(true)
+        supabaseRef.current = true
       }
     } catch { /* not configured */ }
-  }, [])
+    setInitialLoading(false)
+  }
 
-  useEffect(() => { fetchData() }, [fetchData])
+  useEffect(() => {
+    void fetchData()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDelete = async (id: string) => {
     if (!confirm('Hapus program donasi ini?')) return
     if (useSupabase) {
+      const supabase = createClient()
       await supabase.from('donations').delete().eq('id', id)
       await fetchData()
     } else {
@@ -52,11 +64,30 @@ export default function DonationsPage() {
         <Link href="/admin/donations/new" className="btn btn-gold">+ Tambah Program Donasi</Link>
       </div>
 
+      {message && (
+        <div className={`toast ${message.includes('✅') ? 'toast-success' : 'toast-error'}`}>
+          {message}
+        </div>
+      )}
+
+      {initialLoading ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
+          {[1, 2, 3].map(i => (
+            <div key={i} className="skeleton skeleton-card" style={{ height: 200 }} />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="card empty-state">
+          <div className="empty-state-icon">💰</div>
+          <div className="empty-state-text">Belum ada program donasi</div>
+          <div className="empty-state-hint">Klik &quot;+ Tambah Program Donasi&quot; untuk mulai</div>
+        </div>
+      ) : (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
         {items.map((d) => {
           const pct = getPercentage(d.collected_amount, d.target_amount)
           return (
-            <div key={d.id} className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <div key={d.id} className="card animate-fade-in" style={{ padding: 0, overflow: 'hidden' }}>
               {/* Image */}
               {d.image_url ? (
                 <div style={{ height: 140, overflow: 'hidden' }}>
@@ -100,6 +131,7 @@ export default function DonationsPage() {
           )
         })}
       </div>
+      )}
     </div>
   )
 }

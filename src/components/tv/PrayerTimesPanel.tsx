@@ -64,7 +64,7 @@ export default function PrayerTimesPanel({ prayers, currentPrayer, nextPrayer }:
           <div className="tv-iqamah-label">
             ⏱️ {PRAYER_LABELS[nextPrayer]} dalam
           </div>
-          <div className="tv-iqamah-time">
+          <div className="tv-iqamah-time" style={{ fontVariantNumeric: 'tabular-nums' }}>
             {countdown.hours > 0 ? `${countdown.hours}j ` : ''}{pad(countdown.minutes)} menit
           </div>
         </div>
