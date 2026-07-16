@@ -13,6 +13,7 @@ interface MosqueConfig {
   country: string
   provinsi: string
   kabkota: string
+  slide_interval: number
   fullscreen_interval: number
   fullscreen_duration: number
   prayer_duration_subuh: number
@@ -41,6 +42,7 @@ export default function SettingsPage() {
     country: 'ID',
     provinsi: 'DKI Jakarta',
     kabkota: 'Kota Jakarta',
+    slide_interval: 8,
     fullscreen_interval: 5,
     fullscreen_duration: 30,
     prayer_duration_subuh: 15,
@@ -305,7 +307,26 @@ export default function SettingsPage() {
               </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+              <div className="form-group">
+                <label className="form-label">Interval Slide</label>
+                <div className="flex items-center gap-sm">
+                  <input
+                    className="form-input"
+                    type="number"
+                    min={3}
+                    max={60}
+                    value={config.slide_interval}
+                    onChange={(e) => setConfig(prev => ({ ...prev, slide_interval: parseInt(e.target.value) || 8 }))}
+                    style={{ width: 80, textAlign: 'center' }}
+                  />
+                  <span style={{ fontSize: '0.875rem', color: 'var(--gray-500)' }}>detik</span>
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'var(--gray-400)' }}>
+                  Kecepatan pergantian slide konten
+                </p>
+              </div>
+
               <div className="form-group">
                 <label className="form-label">Interval Fullscreen</label>
                 <div className="flex items-center gap-sm">

@@ -9,9 +9,10 @@ import { useClock } from '@/hooks/useClock'
 interface FullscreenSlideProps {
   events: Event[]
   hadiths: Hadith[]
+  slideInterval?: number
 }
 
-export default function FullscreenSlide({ events, hadiths }: FullscreenSlideProps) {
+export default function FullscreenSlide({ events, hadiths, slideInterval = 8 }: FullscreenSlideProps) {
   const { hours, minutes, seconds } = useClock()
 
   // Build slides array
@@ -19,7 +20,7 @@ export default function FullscreenSlide({ events, hadiths }: FullscreenSlideProp
   events.forEach((e) => slides.push({ type: 'event', data: e }))
   hadiths.forEach((h) => slides.push({ type: 'hadith', data: h }))
 
-  const { activeIndex } = useSlideRotation(slides.length, 6000)
+  const { activeIndex } = useSlideRotation(slides.length, slideInterval * 1000)
 
   if (!slides.length) return null
 

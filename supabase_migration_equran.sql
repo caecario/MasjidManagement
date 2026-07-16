@@ -12,3 +12,6 @@ ALTER TABLE mosque_config DROP COLUMN IF EXISTS calculation_method;
 
 -- 3. Add theme column
 ALTER TABLE mosque_config ADD COLUMN IF NOT EXISTS theme TEXT DEFAULT 'ruby_red';
+
+-- 4. Add slide_interval column (seconds between slide transitions, default 8s)
+ALTER TABLE mosque_config ADD COLUMN IF NOT EXISTS slide_interval INT DEFAULT 8;

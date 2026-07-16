@@ -12,6 +12,7 @@ export interface MosqueConfig {
   country: string
   provinsi: string
   kabkota: string
+  slide_interval: number
   fullscreen_interval: number
   fullscreen_duration: number
   prayer_duration_subuh: number

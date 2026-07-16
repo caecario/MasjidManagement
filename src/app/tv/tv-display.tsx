@@ -33,6 +33,7 @@ interface TVDisplayProps {
   tagline?: string
   fullscreenInterval?: number
   fullscreenDuration?: number
+  slideInterval?: number
   prayerDurations?: Record<PrayerName, number>
   provinsi?: string
   kabkota?: string
@@ -51,6 +52,7 @@ export default function TVDisplay({
   tagline,
   fullscreenInterval = 5,
   fullscreenDuration = 30,
+  slideInterval = 8,
   prayerDurations = {
     subuh: 15,
     dzuhur: 15,
@@ -77,7 +79,7 @@ export default function TVDisplay({
     return result
   }, [events, hadiths])
 
-  const { activeIndex } = useSlideRotation(slides.length, 8000)
+  const { activeIndex } = useSlideRotation(slides.length, slideInterval * 1000)
 
   // Prayer times + triggers
   const {
@@ -214,7 +216,7 @@ export default function TVDisplay({
 
   // Fullscreen slide mode
   if (mode === 'fullscreen') {
-    return <FullscreenSlide events={events} hadiths={hadiths} />
+    return <FullscreenSlide events={events} hadiths={hadiths} slideInterval={slideInterval} />
   }
 
   // Normal mode

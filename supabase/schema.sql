@@ -15,6 +15,8 @@ CREATE TABLE mosque_config (
   latitude DECIMAL DEFAULT -6.2088,
   longitude DECIMAL DEFAULT 106.8456,
   calculation_method INT DEFAULT 20,
+  -- Slide rotation settings
+  slide_interval INT DEFAULT 8,          -- slide rotation speed in seconds
   -- Fullscreen slide settings
   fullscreen_interval INT DEFAULT 5,    -- every X minutes, go fullscreen
   fullscreen_duration INT DEFAULT 30,   -- fullscreen duration in seconds

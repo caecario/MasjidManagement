@@ -10,6 +10,7 @@ const DEFAULT_CONFIG = {
   country: 'ID',
   provinsi: 'DKI Jakarta',
   kabkota: 'Kota Jakarta',
+  slide_interval: 8,
   fullscreen_interval: 5,
   fullscreen_duration: 30,
   prayer_duration_subuh: 15,
@@ -39,6 +40,7 @@ async function getConfigFromSupabase() {
     country: data.country,
     provinsi: data.provinsi,
     kabkota: data.kabkota,
+    slide_interval: data.slide_interval,
     fullscreen_interval: data.fullscreen_interval,
     fullscreen_duration: data.fullscreen_duration,
     prayer_duration_subuh: data.prayer_duration_subuh,
@@ -79,6 +81,7 @@ async function saveConfigToSupabase(config: Record<string, unknown>) {
   if (config.country !== undefined) dbData.country = config.country
   if (config.provinsi !== undefined) dbData.provinsi = config.provinsi
   if (config.kabkota !== undefined) dbData.kabkota = config.kabkota
+  if (config.slide_interval !== undefined) dbData.slide_interval = config.slide_interval
   if (config.fullscreen_interval !== undefined) dbData.fullscreen_interval = config.fullscreen_interval
   if (config.fullscreen_duration !== undefined) dbData.fullscreen_duration = config.fullscreen_duration
   if (config.prayer_duration_subuh !== undefined) dbData.prayer_duration_subuh = config.prayer_duration_subuh

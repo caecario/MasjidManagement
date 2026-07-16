@@ -126,6 +126,7 @@ export default async function TVPage() {
   let tagline = 'Menerangi Hati, Menghidupkan Sunnah'
   let fullscreenInterval = 5
   let fullscreenDuration = 30
+  let slideInterval = 8
   let provinsi = 'DKI Jakarta'
   let kabkota = 'Kota Jakarta'
   let prayerDurations = {
@@ -147,6 +148,7 @@ export default async function TVPage() {
       tagline = configData.tagline || tagline
       fullscreenInterval = configData.fullscreen_interval ?? fullscreenInterval
       fullscreenDuration = configData.fullscreen_duration ?? fullscreenDuration
+      slideInterval = configData.slide_interval ?? slideInterval
       provinsi = configData.provinsi ?? provinsi
       kabkota = configData.kabkota ?? kabkota
       prayerDurations = {
@@ -171,6 +173,7 @@ export default async function TVPage() {
       tagline = config.tagline || tagline
       fullscreenInterval = config.fullscreen_interval ?? fullscreenInterval
       fullscreenDuration = config.fullscreen_duration ?? fullscreenDuration
+      slideInterval = config.slide_interval ?? slideInterval
       if (config.prayer_durations) prayerDurations = config.prayer_durations
     } catch (err: unknown) {
       console.warn('Local config unavailable:', err instanceof Error ? err.message : err)
@@ -253,6 +256,7 @@ export default async function TVPage() {
       tagline={tagline}
       fullscreenInterval={fullscreenInterval}
       fullscreenDuration={fullscreenDuration}
+      slideInterval={slideInterval}
       prayerDurations={prayerDurations}
       provinsi={provinsi}
       kabkota={kabkota}
