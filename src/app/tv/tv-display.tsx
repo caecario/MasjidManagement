@@ -35,6 +35,7 @@ interface TVDisplayProps {
   fullscreenDuration?: number
   slideInterval?: number
   prayerDurations?: Record<PrayerName, number>
+  iqamahOffsets?: Record<PrayerName, number>
   provinsi?: string
   kabkota?: string
 }
@@ -59,6 +60,13 @@ export default function TVDisplay({
     ashar: 15,
     maghrib: 10,
     isya: 15,
+  },
+  iqamahOffsets = {
+    subuh: 10,
+    dzuhur: 10,
+    ashar: 10,
+    maghrib: 5,
+    isya: 10,
   },
   provinsi = 'DKI Jakarta',
   kabkota = 'Kota Jakarta',
@@ -90,10 +98,10 @@ export default function TVDisplay({
     iqamahTriggered,
     iqamahCountdown,
     clearTriggers,
-  } = usePrayerTimes(provinsi, kabkota)
+  } = usePrayerTimes(provinsi, kabkota, iqamahOffsets)
 
   // TV display mode state machine
-  const { mode, activePrayer, iqamahRemaining, standbyRemaining } = useTVDisplayMode(
+  const { mode, activePrayer, iqamahRemaining, standbyRemaining, resetToNormal } = useTVDisplayMode(
     adhanTriggered,
     iqamahTriggered,
     iqamahCountdown,
@@ -122,6 +130,17 @@ export default function TVDisplay({
       window.removeEventListener('keydown', enableAudio)
     }
   }, [audioEnabled])
+
+  // ESC key handler — exit fullscreen/prayer mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && (mode === 'fullscreen' || mode === 'prayer_active')) {
+        resetToNormal()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [mode, resetToNormal])
 
   // Refetch data function
   const refetch = useCallback(async (table: string) => {

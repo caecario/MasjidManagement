@@ -18,6 +18,11 @@ const DEFAULT_CONFIG = {
   prayer_duration_ashar: 15,
   prayer_duration_maghrib: 10,
   prayer_duration_isya: 15,
+  iqamah_subuh: 10,
+  iqamah_dzuhur: 10,
+  iqamah_ashar: 10,
+  iqamah_maghrib: 5,
+  iqamah_isya: 10,
   theme: 'ruby_red',
 }
 
@@ -48,6 +53,11 @@ async function getConfigFromSupabase() {
     prayer_duration_ashar: data.prayer_duration_ashar,
     prayer_duration_maghrib: data.prayer_duration_maghrib,
     prayer_duration_isya: data.prayer_duration_isya,
+    iqamah_subuh: data.iqamah_subuh,
+    iqamah_dzuhur: data.iqamah_dzuhur,
+    iqamah_ashar: data.iqamah_ashar,
+    iqamah_maghrib: data.iqamah_maghrib,
+    iqamah_isya: data.iqamah_isya,
     theme: data.theme,
   }
 }
@@ -89,6 +99,11 @@ async function saveConfigToSupabase(config: Record<string, unknown>) {
   if (config.prayer_duration_ashar !== undefined) dbData.prayer_duration_ashar = config.prayer_duration_ashar
   if (config.prayer_duration_maghrib !== undefined) dbData.prayer_duration_maghrib = config.prayer_duration_maghrib
   if (config.prayer_duration_isya !== undefined) dbData.prayer_duration_isya = config.prayer_duration_isya
+  if (config.iqamah_subuh !== undefined) dbData.iqamah_subuh = config.iqamah_subuh
+  if (config.iqamah_dzuhur !== undefined) dbData.iqamah_dzuhur = config.iqamah_dzuhur
+  if (config.iqamah_ashar !== undefined) dbData.iqamah_ashar = config.iqamah_ashar
+  if (config.iqamah_maghrib !== undefined) dbData.iqamah_maghrib = config.iqamah_maghrib
+  if (config.iqamah_isya !== undefined) dbData.iqamah_isya = config.iqamah_isya
   if (config.theme !== undefined) dbData.theme = config.theme
 
   // Get existing config row

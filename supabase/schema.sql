@@ -26,6 +26,12 @@ CREATE TABLE mosque_config (
   prayer_duration_ashar INT DEFAULT 15,
   prayer_duration_maghrib INT DEFAULT 10,
   prayer_duration_isya INT DEFAULT 15,
+  -- Iqamah offset (minutes from adzan to iqamah)
+  iqamah_subuh INT DEFAULT 10,
+  iqamah_dzuhur INT DEFAULT 10,
+  iqamah_ashar INT DEFAULT 10,
+  iqamah_maghrib INT DEFAULT 5,
+  iqamah_isya INT DEFAULT 10,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

@@ -21,6 +21,11 @@ interface MosqueConfig {
   prayer_duration_ashar: number
   prayer_duration_maghrib: number
   prayer_duration_isya: number
+  iqamah_subuh: number
+  iqamah_dzuhur: number
+  iqamah_ashar: number
+  iqamah_maghrib: number
+  iqamah_isya: number
   theme: string
 }
 
@@ -50,6 +55,11 @@ export default function SettingsPage() {
     prayer_duration_ashar: 15,
     prayer_duration_maghrib: 10,
     prayer_duration_isya: 15,
+    iqamah_subuh: 10,
+    iqamah_dzuhur: 10,
+    iqamah_ashar: 10,
+    iqamah_maghrib: 5,
+    iqamah_isya: 10,
     theme: 'ruby_red',
   })
   const [uploading, setUploading] = useState(false)
@@ -169,6 +179,13 @@ export default function SettingsPage() {
     setConfig(prev => ({
       ...prev,
       [`prayer_duration_${prayer}`]: value,
+    }))
+  }
+
+  const updateIqamahOffset = (prayer: string, value: number) => {
+    setConfig(prev => ({
+      ...prev,
+      [`iqamah_${prayer}`]: value,
     }))
   }
 
@@ -404,6 +421,51 @@ export default function SettingsPage() {
                       </td>
                       <td style={{ fontSize: '0.8125rem', color: 'var(--gray-400)' }}>
                         Tampil layar sholat setelah iqamah
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Iqamah Countdown Settings */}
+        <div className="card">
+          <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>⏱️ Jeda Iqamah (Countdown)</h2>
+          <div className="flex flex-col gap-md">
+            <div style={{ background: 'var(--green-50)', border: '1px solid var(--green-200)', borderRadius: 'var(--radius-md)', padding: '0.75rem' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--green-700)' }}>
+                Berapa menit <strong>dari adzan sampai iqamah</strong>. Selama jeda ini, layar TV menampilkan countdown menuju iqamah.
+              </p>
+            </div>
+
+            <div className="table-wrapper">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Sholat</th>
+                    <th>Jeda Iqamah (menit)</th>
+                    <th>Keterangan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'].map((prayer) => (
+                    <tr key={prayer}>
+                      <td style={{ fontWeight: 600 }}>{prayerLabels[prayer]}</td>
+                      <td>
+                        <input
+                          className="form-input"
+                          type="number"
+                          min={1}
+                          max={30}
+                          value={(config as unknown as Record<string, number>)[`iqamah_${prayer}`]}
+                          onChange={(e) => updateIqamahOffset(prayer, parseInt(e.target.value) || 10)}
+                          style={{ width: 80, textAlign: 'center' }}
+                        />
+                      </td>
+                      <td style={{ fontSize: '0.8125rem', color: 'var(--gray-400)' }}>
+                        Countdown dari adzan ke iqamah
                       </td>
                     </tr>
                   ))}

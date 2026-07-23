@@ -17,6 +17,8 @@ interface UseTVDisplayModeReturn {
   iqamahRemaining: number | null
   /** seconds remaining on standby timer (null = not in standby) */
   standbyRemaining: number | null
+  /** Force-reset to normal mode (e.g. ESC key) */
+  resetToNormal: () => void
 }
 
 const DEFAULT_CONFIG: TVDisplayConfig = {
@@ -126,6 +128,16 @@ export function useTVDisplayMode(
     }
   }, [iqamahTriggered, clearTriggers, config.prayerDurations])
 
+  // ── Manual reset (ESC key) ────────────────────────────────
+  const resetToNormal = useCallback(() => {
+    if (fullscreenTimerRef.current) clearTimeout(fullscreenTimerRef.current)
+    if (standbyTimerRef.current) clearInterval(standbyTimerRef.current)
+    standbyEndRef.current = null
+    setMode('normal')
+    setActivePrayer(null)
+    setStandbyRemaining(null)
+  }, [])
+
   return {
     mode,
     activePrayer,
@@ -133,5 +145,6 @@ export function useTVDisplayMode(
       ? iqamahCountdown
       : null,
     standbyRemaining: mode === 'prayer_active' ? standbyRemaining : null,
+    resetToNormal,
   }
 }

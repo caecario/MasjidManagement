@@ -41,8 +41,10 @@ function parseTime(t: string): number {
 
 export function usePrayerTimes(
   provinsi: string = 'DKI Jakarta',
-  kabkota: string = 'Kota Jakarta'
+  kabkota: string = 'Kota Jakarta',
+  iqamahOffsets?: Record<PrayerName, number>
 ): UsePrayerTimesReturn {
+  const iqamahConfig = iqamahOffsets ?? DEFAULT_IQAMAH
   const [prayers, setPrayers] = useState<PrayerSchedule>({
     subuh: '04:45',
     dzuhur: '12:03',
@@ -157,7 +159,7 @@ export function usePrayerTimes(
     // Check iqamah countdown (within iqamah window of current prayer)
     if (current) {
       const prayerSeconds = parseTime(prayers[current]) * 60
-      const iqamahMinutes = DEFAULT_IQAMAH[current]
+      const iqamahMinutes = iqamahConfig[current]
       const iqamahEndSeconds = prayerSeconds + iqamahMinutes * 60
       const remaining = iqamahEndSeconds - nowSeconds
 
@@ -176,7 +178,7 @@ export function usePrayerTimes(
         setIqamahTriggered(current)
       }
     }
-  }, [prayers])
+  }, [prayers, iqamahConfig])
 
   useEffect(() => {
     updatePrayerState()

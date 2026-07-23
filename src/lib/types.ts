@@ -20,6 +20,11 @@ export interface MosqueConfig {
   prayer_duration_ashar: number
   prayer_duration_maghrib: number
   prayer_duration_isya: number
+  iqamah_subuh: number
+  iqamah_dzuhur: number
+  iqamah_ashar: number
+  iqamah_maghrib: number
+  iqamah_isya: number
   created_at: string
 }
 

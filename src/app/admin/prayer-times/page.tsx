@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 
 const labels: Record<string, string> = {
   subuh: '🌅 Subuh',
@@ -35,11 +34,20 @@ export default function PrayerTimesPage() {
   useEffect(() => {
     async function load() {
       try {
-        // 1. Get mosque config (provinsi/kabkota)
+        // 1. Get mosque config (provinsi/kabkota + iqamah offsets)
         const cfgRes = await fetch('/api/config')
         const cfg = await cfgRes.json()
         const provinsi = cfg.provinsi ?? 'DKI Jakarta'
         const kabkota = cfg.kabkota ?? 'Kota Jakarta'
+
+        // Load iqamah offsets from config
+        const iqamahDefaults: Record<string, number> = {
+          subuh: cfg.iqamah_subuh ?? 10,
+          dzuhur: cfg.iqamah_dzuhur ?? 10,
+          ashar: cfg.iqamah_ashar ?? 10,
+          maghrib: cfg.iqamah_maghrib ?? 5,
+          isya: cfg.iqamah_isya ?? 10,
+        }
 
         // 2. Call eQuran.id API (same as TV)
         const today = new Date()
@@ -59,34 +67,17 @@ export default function PrayerTimesPage() {
             (j: { tanggal: number }) => j.tanggal === todayDate
           )
           if (todaySchedule) {
-            setPrayers(prev => ({
-              subuh: { time: todaySchedule.subuh, iqamah: prev.subuh.iqamah },
-              dzuhur: { time: todaySchedule.dzuhur, iqamah: prev.dzuhur.iqamah },
-              ashar: { time: todaySchedule.ashar, iqamah: prev.ashar.iqamah },
-              maghrib: { time: todaySchedule.maghrib, iqamah: prev.maghrib.iqamah },
-              isya: { time: todaySchedule.isya, iqamah: prev.isya.iqamah },
-            }))
+            setPrayers({
+              subuh: { time: todaySchedule.subuh, iqamah: iqamahDefaults.subuh },
+              dzuhur: { time: todaySchedule.dzuhur, iqamah: iqamahDefaults.dzuhur },
+              ashar: { time: todaySchedule.ashar, iqamah: iqamahDefaults.ashar },
+              maghrib: { time: todaySchedule.maghrib, iqamah: iqamahDefaults.maghrib },
+              isya: { time: todaySchedule.isya, iqamah: iqamahDefaults.isya },
+            })
           }
         }
 
-        // 3. Load iqamah overrides from Supabase prayer_times table
-        const supabase = createClient()
-        const { data: ptData } = await supabase.from('prayer_times').select('*')
-        if (ptData?.length) {
-          setPrayers(prev => {
-            const updated = { ...prev }
-            for (const row of ptData) {
-              const name = row.prayer_name as string
-              if (updated[name]) {
-                updated[name] = {
-                  ...updated[name],
-                  iqamah: row.iqamah_offset ?? updated[name].iqamah,
-                }
-              }
-            }
-            return updated
-          })
-        }
+        // Iqamah offsets are now centralized in mosque_config
       } catch (err) {
         console.error('Failed to load prayer times:', err)
       } finally {
@@ -104,17 +95,23 @@ export default function PrayerTimesPage() {
     setSaving(true)
     setMessage('')
     try {
-      const supabase = createClient()
+      // Save iqamah offsets to mosque_config via /api/config
+      const iqamahConfig: Record<string, number> = {}
       for (const [name, data] of Object.entries(prayers)) {
-        await supabase.from('prayer_times').upsert({
-          prayer_name: name,
-          time: data.time,
-          iqamah_offset: data.iqamah,
-        }, { onConflict: 'prayer_name' })
+        iqamahConfig[`iqamah_${name}`] = data.iqamah
       }
-      setMessage('✅ Berhasil disimpan!')
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(iqamahConfig),
+      })
+      if (res.ok) {
+        setMessage('✅ Jeda iqamah berhasil disimpan! Refresh TV untuk melihat perubahan.')
+      } else {
+        setMessage('⚠️ Gagal menyimpan')
+      }
     } catch {
-      setMessage('⚠️ Supabase belum dikonfigurasi.')
+      setMessage('⚠️ Gagal menyimpan')
     } finally {
       setSaving(false)
       setTimeout(() => setMessage(''), 3000)

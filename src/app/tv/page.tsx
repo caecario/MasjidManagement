@@ -136,6 +136,13 @@ export default async function TVPage() {
     maghrib: 10,
     isya: 15,
   } as Record<import('@/lib/types').PrayerName, number>
+  let iqamahOffsets = {
+    subuh: 10,
+    dzuhur: 10,
+    ashar: 10,
+    maghrib: 5,
+    isya: 10,
+  } as Record<import('@/lib/types').PrayerName, number>
 
   try {
     const { createClient } = await import('@/lib/supabase/server')
@@ -158,6 +165,13 @@ export default async function TVPage() {
         maghrib: configData.prayer_duration_maghrib ?? 10,
         isya: configData.prayer_duration_isya ?? 15,
       }
+      iqamahOffsets = {
+        subuh: configData.iqamah_subuh ?? 10,
+        dzuhur: configData.iqamah_dzuhur ?? 10,
+        ashar: configData.iqamah_ashar ?? 10,
+        maghrib: configData.iqamah_maghrib ?? 5,
+        isya: configData.iqamah_isya ?? 10,
+      }
     }
   } catch (err: unknown) {
     console.warn('Supabase config unavailable, trying local JSON:', err instanceof Error ? err.message : err)
@@ -175,6 +189,7 @@ export default async function TVPage() {
       fullscreenDuration = config.fullscreen_duration ?? fullscreenDuration
       slideInterval = config.slide_interval ?? slideInterval
       if (config.prayer_durations) prayerDurations = config.prayer_durations
+      if (config.iqamah_offsets) iqamahOffsets = config.iqamah_offsets
     } catch (err: unknown) {
       console.warn('Local config unavailable:', err instanceof Error ? err.message : err)
     }
@@ -258,6 +273,7 @@ export default async function TVPage() {
       fullscreenDuration={fullscreenDuration}
       slideInterval={slideInterval}
       prayerDurations={prayerDurations}
+      iqamahOffsets={iqamahOffsets}
       provinsi={provinsi}
       kabkota={kabkota}
     />
